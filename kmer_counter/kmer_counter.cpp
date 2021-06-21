@@ -406,7 +406,7 @@ bool parse_parameters(int argc, char *argv[])
 				Params.input_file_names.push_back(s);
 
 		in.close();
-		random_shuffle(Params.input_file_names.begin(), Params.input_file_names.end());
+		//random_shuffle(Params.input_file_names.begin(), Params.input_file_names.end());
 	}
 
 	if (Params.p_t > Params.p_m * 64)

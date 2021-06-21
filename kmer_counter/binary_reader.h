@@ -311,6 +311,7 @@ public:
 			CompressionType mode;
 			FILE* f = nullptr;
 			OpenFile(file_name, f, mode);
+			//cout << binary_pack_queues.size() << ":" << file_gid << "->" << file_name << endl;
 			files.push_back(make_tuple(f, q, mode, file_gid));
 
 			pmm_binary_file_reader->reserve(part);
@@ -353,6 +354,7 @@ public:
 					{
             get<3>(f) = file_gid;
             file_gid++;
+						//cout << get<3>(f) << "->" << file_name << endl;
 						OpenFile(file_name, get<0>(f), get<2>(f));
 						pmm_binary_file_reader->reserve(part);
 						readed = fread(part, 1, part_size, get<0>(f));
