@@ -1,8 +1,9 @@
-all: kmc generate_uniq
+all: kmc generate_uniq change_format
 
 KMC_BIN_DIR = bin
 KMC_MAIN_DIR = kmer_counter
 UNIQ_MAIN_DIR = find_unique
+CHANGE_FORMAT = change_format
 
 CC 	= g++
 CFLAGS	= -Wall -O3 -m64 -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -std=c++11
@@ -36,12 +37,15 @@ UNIQ_OBJS = \
 $(UNIQ_MAIN_DIR)/unique_kmer.o \
 $(UNIQ_MAIN_DIR)/generate_uniq.o
 
+CHANGE_FORMAT_OBJS= \
+$(UNIQ_MAIN_DIR)/change_format.o \
+
 KMC_LIBS = \
 $(KMC_MAIN_DIR)/libs/libz.a \
 $(KMC_MAIN_DIR)/libs/libbz2.a
 
 
-$(KMC_OBJS) $(UNIQ_OBJS): %.o: %.cpp
+$(KMC_OBJS) $(UNIQ_OBJS) $(CHANGE_FORMAT_OBJS): %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(KMC_MAIN_DIR)/raduls_sse2.o: $(KMC_MAIN_DIR)/raduls_sse2.cpp
@@ -60,6 +64,10 @@ kmc: $(KMC_OBJS) $(RADULS_OBJS)
 generate_uniq: ${UNIQ_OBJS}
 	-mkdir -p $(KMC_BIN_DIR)
 	$(CC) $(CLINK) -o $(KMC_BIN_DIR)/$@ $^ $(UNIQ_LIBS)
+
+change_format: ${CHANGE_FORMAT_OBJS}
+	-mkdir -p $(KMC_BIN_DIR)
+	$(CC) $(CLINK) -o $(KMC_BIN_DIR)/$@ $^ 
 
 clean:
 	-rm -f $(KMC_MAIN_DIR)/*.o
