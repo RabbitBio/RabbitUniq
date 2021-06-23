@@ -1,4 +1,4 @@
-all: kmc find_uniq
+all: kmc generate_uniq
 
 KMC_BIN_DIR = bin
 KMC_MAIN_DIR = kmer_counter
@@ -33,7 +33,8 @@ $(KMC_MAIN_DIR)/raduls_avx2.o \
 $(KMC_MAIN_DIR)/raduls_avx.o
 
 UNIQ_OBJS = \
-$(UNIQ_MAIN_DIR)/unique_kmer.o
+$(UNIQ_MAIN_DIR)/unique_kmer.o \
+$(UNIQ_MAIN_DIR)/generate_uniq.o
 
 KMC_LIBS = \
 $(KMC_MAIN_DIR)/libs/libz.a \
@@ -56,7 +57,7 @@ kmc: $(KMC_OBJS) $(RADULS_OBJS)
 	-mkdir -p $(KMC_BIN_DIR)
 	$(CC) $(CLINK) -o $(KMC_BIN_DIR)/$@ $^ $(KMC_LIBS)
 
-find_uniq: ${UNIQ_OBJS}
+generate_uniq: ${UNIQ_OBJS}
 	-mkdir -p $(KMC_BIN_DIR)
 	$(CC) $(CLINK) -o $(KMC_BIN_DIR)/$@ $^ $(UNIQ_LIBS)
 
