@@ -39,7 +39,9 @@ def main_step():
                                        '-k'+str(KMERLEN),
                                        '-fm', '@'+infile_list,
                                        "tmp", work_space])
-    print(kmc_out.decode())
+    id2filenames = set(kmc_out.decode().split('\n'))
+    for s in id2filenames:
+      print(s)
   except e:
     print("run kmc error!")
   
@@ -56,13 +58,14 @@ def main_step():
     print("run gene uniq error!")
     print(e.output)
     exit(-1)
-  print("done, out file is in outfile.txt")
+  #print("done, out file is in outfile.txt")
   merge('./outfile.txt', out_file)
   os.remove('./outfile.txt')
 
 if __name__ == "__main__":
-  if sys.argc < 3:
+  if len(sys.argv) < 4:
     print("./run_this.py [tmp workspace] [fasta file list] [result file]")
+    exit(-1)
   work_space = sys.argv[1] #"./workspace"
   infile_list = sys.argv[2]
   out_file = sys.argv[3]
