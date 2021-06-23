@@ -10,7 +10,7 @@ using namespace std;
 
 atomic_int file_index(-1);
 
-void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file *w_file)
+void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file *w_file, int kmer_len)
 {
     while(true)
     {
@@ -19,7 +19,7 @@ void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file 
         if(i >= 512)
             break;
         string s = (*file_names)[i];
-        get_unique_kmer(&s, 25, *v_kinds, *w_file);
+        get_unique_kmer(&s, kmer_len, *v_kinds, *w_file);
     }
 }
 
@@ -56,10 +56,11 @@ int main(int argc, char **argv)
 
     vector<thread> threads;
 
-    for(int i = 0; i < 20; i++)
-        threads.emplace_back(thread_fun, &file_vectors, &v, &w_file);
+    int work_th = 10;
+    for(int i = 0; i < work_th; i++)
+        threads.emplace_back(thread_fun, &file_vectors, &v, &w_file, stoi(argv[2]));
 
-    for(int i = 0; i < 20; i++)
+    for(int i = 0; i < work_th; i++)
         threads[i].join();
 
     t.join();

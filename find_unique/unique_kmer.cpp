@@ -305,6 +305,7 @@ void Write_file::operator()()
                 auto top = dq.front();
                 dq.pop_front();
                 f.write(top.first, top.second * sizeof(char));
+                delete [] top.first;
             }
             //cout << "\nover!!!!!!!!!!!!!\n";
             break;
@@ -402,6 +403,7 @@ void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_fil
         tmpbuf[tmpbufsize++] = '>';
         //cout << "id = " << buf[x].id << endl;
         string &idstring = ids[buf[x].id];
+        //cout << buf[x].id << endl;
         const char* idstringcp = idstring.c_str();
         std::copy(idstringcp, idstringcp + idstring.size(), tmpbuf + tmpbufsize);
         tmpbufsize += idstring.size();
@@ -555,7 +557,18 @@ void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, i
     //return buf_pos;
 }
 
-
+inline void print(uint64_t kmer, int kl)
+{
+    char kmerstr[kl];
+    static char maparray[4] = {'A', 'C', 'G', 'T'};
+    for(int i = 0; i < kl; i++)
+    {
+        uint8_t base = kmer & 0x3;
+        kmerstr[kl - 1 - i] = maparray[base];
+        kmer >>= 2;
+    }
+    cout << string(kmerstr) << endl; 
+}
 
 void get_unique_kmer(const string *file_name, int kmer_len, vector<string> &ids, Write_file &w_file)
 {
@@ -581,14 +594,34 @@ void get_unique_kmer(const string *file_name, int kmer_len, vector<string> &ids,
         static const uint64_t mask = (1ull << (kmer_len * 2)) - 1;
 
         uint64_t kmer = 0;
-        for(int zero = 0; zero < 7; zero++)
+        
+        for(int zero = 0; zero < (kmer_len + 3) / 4; zero++)
         {
-            kmer |= ((uint8_t)buf[i + zero]);
             kmer <<= 8;
+            kmer |= ((uint8_t)buf[i + zero]);
         }
-        kmer |= ((uint8_t)buf[i + 7]);
-        kmer >>= (64 - kmer_len * 2 + 2);
+        //kmer |= ((uint8_t)buf[i + (kmer_len + 3) / 4]);
+        //if(kmer_len % 4 != 0)
+        //{
+        //    kmer >>= (10 - 2 * (kmer_len % 4));
+        //}
+        //kmer >>= (64 - kmer_len * 2 + 2);
+        if(kmer_len % 4)
+            kmer >>= (10 - 2 * (kmer_len % 4));
         kmer &= mask;
+
+        uint64_t kmer_rvs = 0;
+        uint64_t kmer_tmp = kmer;
+        for(int r = 0; r < kmer_len - 1; r++)
+        {
+            uint8_t base = kmer_tmp & 0x3;
+            kmer_rvs += base;
+            kmer_tmp >>= 2;
+            kmer_rvs <<= 2;
+        }
+        //kmer_rvs += kmer_tmp;
+        //kmer_rvs = (~kmer_rvs) & (mask >> 2);
+        kmer_rvs = (~kmer_rvs) & mask;
 
         int index = 2 * kmer_len - 4; //start from 0
         for(int j = 0; j <= super_kmer_len - kmer_len; j++)
@@ -598,12 +631,24 @@ void get_unique_kmer(const string *file_name, int kmer_len, vector<string> &ids,
             int index_1 = index / 8;
             int index_2 = index - (index_1 * 8);
             //char tmp_char = buf[i + index_1]; //for debug
-            int base = ((buf[i + index_1]) >> (6 - index_2)) & 0x03;
+            uint64_t base = ((buf[i + index_1]) >> (6 - index_2)) & 0x03;
             kmer <<= 2;
             kmer += base;
             kmer &= mask;
 
+            kmer_rvs >>= 2;
+            base = 3 - base;
+            kmer_rvs |= (base << ((kmer_len - 1) * 2));
+
             kmerslist.emplace_back(kmer, file_id);
+            //if (file_id == 2768)
+            //    print(kmer, 25);
+#ifdef RVS
+            kmerslist.emplace_back(kmer_rvs, file_id);
+#endif
+
+            //cout << kmer << "|" << kmer_rvs << endl;
+
             //count_push++; //for debug
         }
 

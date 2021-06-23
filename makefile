@@ -67,4 +67,4 @@ clean:
 	-rm -f $(KMC_TOOLS_DIR)/*.o
 	-rm -f $(PY_KMC_API_DIR)/*.o
 	-rm -f $(PY_KMC_API_DIR)/*.so
-	-rm -rf bin
+	#-rm -rf bin
