@@ -312,6 +312,7 @@ public:
 			FILE* f = nullptr;
 			OpenFile(file_name, f, mode);
             cout << file_gid << ":" << file_name << endl;
+
 			files.push_back(make_tuple(f, q, mode, file_gid));
 
 			pmm_binary_file_reader->reserve(part);
