@@ -7,7 +7,6 @@ import sys
 
 KMERLEN=25
 
-
 def merge(infile, outfile):
   merge_dict = {}
   with open(infile, 'r') as f:

@@ -425,7 +425,7 @@ bool CFastqReader::GetPartFromMultilneFasta(uchar *&_part, uint64 &_size, uint64
 	{
 		part_filled = kmer_len - 1;
 		_size = pos;
-		if (_size < part_filled) //fixes 96
+		if (_size < part_filled || last_in_file) //fixes 96
 			part_filled = 0;
 		pmm_fastq->reserve(part);
 		copy(_part + _size - part_filled, _part + _size, part);
@@ -436,8 +436,13 @@ bool CFastqReader::GetPartFromMultilneFasta(uchar *&_part, uint64 &_size, uint64
 		_size = last_header_pos;
 		part_filled = pos - last_header_pos;
 		pmm_fastq->reserve(part);
-		copy(_part + last_header_pos, _part + pos, part);
-		containsNextChromosome = true;
+		if(!last_in_file){
+			copy(_part + last_header_pos, _part + pos, part);
+			containsNextChromosome = true;
+		}else{
+			part_filled = 0;
+			containsNextChromosome = false;
+		}
 	}
 	return true;
 }
@@ -1216,6 +1221,7 @@ void CWFastqReader::operator()()
 		ReadType read_type;
 		while (fqr->GetPartNew(part, part_filled, read_type, ref_id)){
 			part_queue->push(ref_id, part, part_filled, read_type); //--------------------------------add id here --------------------------//
+			//cout << ref_id << " | " << string((char*)part, 50) << endl;
     }
 	}
 	delete fqr;
