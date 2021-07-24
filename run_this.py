@@ -7,7 +7,8 @@ import sys
 
 KMERLEN=25
 
-def merge(infile, outfile):
+
+def merge(infile, outfile, id_name_map):
   merge_dict = {}
   with open(infile, 'r') as f:
     content = ""
@@ -23,7 +24,8 @@ def merge(infile, outfile):
 
   with open(outfile, 'w') as f:
     for k, v in merge_dict.items():
-      f.write(">" + k + "\n")
+      ref_name = id_name_map[k]
+      f.write(">" + ref_name + "\n")
       for line in v:
         f.write(line)
 
@@ -58,7 +60,15 @@ def main_step():
     print(e.output)
     exit(-1)
   #print("done, out file is in outfile.txt")
-  merge('./outfile.txt', out_file)
+  #---------step3 merge------#
+  id_name_map = dict()
+  with open(infile_list, 'r') as f:
+    index = 0
+    for line in f:
+      id_name_map[str(index)] = line.split('/')[-1].strip()
+      index += 1
+  print(id_name_map)
+  merge('./outfile.txt', out_file, id_name_map)
   os.remove('./outfile.txt')
 
 if __name__ == "__main__":
@@ -69,5 +79,3 @@ if __name__ == "__main__":
   infile_list = sys.argv[2]
   out_file = sys.argv[3]
   main_step()
-
-
