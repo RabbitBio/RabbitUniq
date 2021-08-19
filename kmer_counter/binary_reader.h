@@ -311,7 +311,7 @@ public:
 			CompressionType mode;
 			FILE* f = nullptr;
 			OpenFile(file_name, f, mode);
-            cout << file_gid << ":" << file_name << endl;
+            //cout << file_gid << ":" << file_name << endl;
 
 			files.push_back(make_tuple(f, q, mode, file_gid));
 
@@ -354,7 +354,7 @@ public:
 					if (input_files_queue->pop(file_name))
 					{
                         get<3>(f) = file_gid;
-                        cout << file_gid << ":" << file_name << endl;
+                        //cout << file_gid << ":" << file_name << endl;
                         file_gid++;
 						OpenFile(file_name, get<0>(f), get<2>(f));
 						pmm_binary_file_reader->reserve(part);

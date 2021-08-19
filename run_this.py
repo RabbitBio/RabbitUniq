@@ -4,6 +4,7 @@ import subprocess
 import os
 import glob
 import sys
+import time
 
 KMERLEN=25
 
@@ -35,6 +36,7 @@ def main_step():
   if not os.path.exists(work_space):
     os.mkdir(work_space)
   #---------step1-----------#
+  s1_start = time.time()
   try:
     kmc_out = subprocess.check_output(["./bin/kmc",
                                        '-k'+str(KMERLEN),
@@ -49,6 +51,9 @@ def main_step():
   with open(os.path.join(work_space, 'binList.list'), 'w') as f:
     for filename in glob.glob(os.path.join(work_space, "*.bin")):
       f.write(filename + '\n')
+  s1_end = time.time()
+  print("step 1: kmc step time: ", s1_end - s1_start)
+  exit()
   
   #---------step2-----------#
   try:
@@ -60,6 +65,8 @@ def main_step():
     print(e.output)
     exit(-1)
   #print("done, out file is in outfile.txt")
+  s2_end = time.time()
+  print("step 2: generate uniqu step time: ", s2_end - s1_end)
   #---------step3 merge------#
   id_name_map = dict()
   with open(infile_list, 'r') as f:
@@ -67,9 +74,11 @@ def main_step():
     for line in f:
       id_name_map[str(index)] = line.split('/')[-1].strip()
       index += 1
-  print(id_name_map)
+  #print(id_name_map)
   merge('./outfile.txt', out_file, id_name_map)
   os.remove('./outfile.txt')
+  s3_end = time.time()
+  print("step 3: merge step(python) time: ", s3_end - s2_end)
 
 if __name__ == "__main__":
   if len(sys.argv) < 4:

@@ -446,7 +446,8 @@ void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_fil
 void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, int maxbit_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, vector<string> &ids)
 {
 
-    vector<list<kmer_node>> buckets(1ull << bitlen);
+    //vector<list<kmer_node>> buckets(1ull << bitlen);
+    vector<vector<kmer_node>> buckets(1ull << bitlen);
 
     const uint64_t mask = (1ull << bitlen) - 1;
 
@@ -456,12 +457,12 @@ void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, i
 
     std::vector<kmer_node>().swap(v);
 
-
     l = buckets.size();
     for(int i = 0; i < l; i++)
     {
-        vector<kmer_node> ltov(buckets[i].begin(), buckets[i].end());
-        std::list<kmer_node>().swap(buckets[i]);
+        //vector<kmer_node> ltov(buckets[i].begin(), buckets[i].end());
+        vector<kmer_node> &ltov = buckets[i];
+        //std::list<kmer_node>().swap(buckets[i]);
         int vl = ltov.size();
         if(vl == 0)
             continue;
@@ -476,49 +477,6 @@ void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, i
 
                 //void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file)
                 Flush(buf, maxbufsize, kmer_len, buf_pos, w_file, ids);
-                //FIXME tmpbuf may be out of bound
-                //char *tmpbuf = new char[96 * maxbufsize];
-                //int tmpbufsize = 0;
-                //for(int x = 0; x < maxbufsize; x++)
-                //{
-                //    tmpbuf[tmpbufsize++] = '>';
-                //    //cout << "id = " << buf[x].id << endl;
-                //    string &idstring = ids[buf[x].id];
-                //    const char* idstringcp = idstring.c_str();
-                //    std::copy(idstringcp, idstringcp + idstring.size(), tmpbuf + tmpbufsize);
-                //    tmpbufsize += idstring.size();
-                //    tmpbuf[tmpbufsize++] = '\n';
-
-                //    int kmer_len_bytes = (kmer_len / 4) + 1;
-                //    uint8_t *bases = (((uint8_t*)(&(buf[x].kmer))) + kmer_len_bytes);
-                //    //TODO uint8_t
-                //    int kmer_len_mode_8 = kmer_len % 4;
-                //    
-                //    switch(kmer_len_mode_8)
-                //    {
-                //        case 3:
-                //            tmpbuf[tmpbufsize++] = kmerToBase[*bases][1];
-                //        case 2:
-                //            tmpbuf[tmpbufsize++] = kmerToBase[*bases][2];
-                //        case 1:
-                //            tmpbuf[tmpbufsize++] = kmerToBase[*bases][3];
-                //    }
-
-                //    bases--;
-                //    kmer_len_bytes--;
-
-                //    for(int z = 0; z < kmer_len_bytes; z++)
-                //    {
-                //        std::copy(kmerToBase[*bases], kmerToBase[*bases] + 4, tmpbuf + tmpbufsize);    
-                //        tmpbufsize += 4;
-                //        bases--;
-                //    }
-
-                //    tmpbuf[tmpbufsize++] = '\n';
-                //}
-
-                //w_file.push(tmpbuf, tmpbufsize);
-                //buf_pos = 0;
             }
             continue;
         }
@@ -551,7 +509,7 @@ void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, i
         //
         //void find_unique(vector<node> &v, int bitstart, int bitlen, int maxbit_len, node* buf, int buf_pos, int maxbufsize, Write_file &w_file, vector<string< &ids)
         //
-        std::vector<kmer_node>().swap(ltov);
+        //std::vector<kmer_node>().swap(ltov);
     }
 
     //return buf_pos;
