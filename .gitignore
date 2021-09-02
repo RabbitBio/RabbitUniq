@@ -1,0 +1,6 @@
+*.o
+*.swp
+workspace
+Experiments
+bin
+*.fa
