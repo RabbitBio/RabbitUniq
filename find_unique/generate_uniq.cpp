@@ -12,21 +12,25 @@ atomic_int file_index(-1);
 
 void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file *w_file, int kmer_len)
 {
+	  const int n_files = file_names->size();
     while(true)
     {
         int i = ++file_index;
-        cout << i << endl;
-        if(i >= 512)
-            break;
         string s = (*file_names)[i];
-        get_unique_kmer(&s, kmer_len, *v_kinds, *w_file);
+        //cout << i << endl;
+				cout << "starting" << i << " - " << s << endl;
+        if(i >= n_files)
+            break;
+        //string s = (*file_names)[i];
+        get_unique_kmer(s, kmer_len, *v_kinds, *w_file);
+				cout << i << " - " << s << " done" << endl;
     }
 }
 
 int main(int argc, char **argv)
 {
-    vector<string> v(10000);
-    for(int i = 0; i < 10000; i++)
+    vector<string> v(100000);
+    for(int i = 0; i < 100000; i++)
         v[i] = to_string(i);
     //void get_unique_kmer(const string *file_name, int kmer_len, vector<string> &ids, Write_file &w_file)
 
@@ -64,24 +68,5 @@ int main(int argc, char **argv)
         threads[i].join();
 
     t.join();
-      //void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file *w_file)
-      //
-    //!!!!!!!!!!!!!!!!!!!!!!!111
-
-    //for(int i = 0; i < file_vectors.size(); i++)
-    //{
-    //    threads.emplace_back(get_unique_kmer, &file_vectors[i], 25, std::ref(v), std::ref(w_file));
-    //}
-
-    //for(int i = 0; i < file_vectors.size(); i++)
-    //    threads[i].join();
-    //t.join();
-
-
-    //string file_name(argv[1]);
-    //thread t1(get_unique_kmer, &file_name, 25, std::ref(v), std::ref(w_file));
-    //thread t2(std::ref(w_file));
-    //t1.join();
-    //t2.join();
 }
 

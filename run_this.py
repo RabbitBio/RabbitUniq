@@ -6,7 +6,7 @@ import glob
 import sys
 import time
 
-KMERLEN=25
+KMERLEN=19
 
 
 def merge(infile, outfile, id_name_map):
@@ -37,23 +37,23 @@ def main_step():
     os.mkdir(work_space)
   #---------step1-----------#
   s1_start = time.time()
-  try:
-    kmc_out = subprocess.check_output(["./bin/kmc",
-                                       '-k'+str(KMERLEN),
-                                       '-fm', '@'+infile_list,
-                                       "tmp", work_space])
-    id2filenames = set(kmc_out.decode().split('\n'))
-    for s in id2filenames:
-      print(s)
-  except e:
-    print("run kmc error!")
-  
-  with open(os.path.join(work_space, 'binList.list'), 'w') as f:
-    for filename in glob.glob(os.path.join(work_space, "*.bin")):
-      f.write(filename + '\n')
+  # - try:
+  # -   kmc_out = subprocess.check_output(["./bin/kmc",
+  # -                                      '-k'+str(KMERLEN),
+  # -                                      '-fm', '@'+infile_list,
+  # -                                      "tmp", work_space])
+  # -   id2filenames = set(kmc_out.decode().split('\n'))
+  # -   print("id2filenames: ", id2filenames)
+  # -   for s in id2filenames:
+  # -     print(s)
+  # - except e:
+  # -   print("run kmc error!")
+  # - 
+  # - with open(os.path.join(work_space, 'binList.list'), 'w') as f:
+  # -   for filename in glob.glob(os.path.join(work_space, "*.bin")):
+  # -     f.write(filename + '\n')
   s1_end = time.time()
   print("step 1: kmc step time: ", s1_end - s1_start)
-  exit()
   
   #---------step2-----------#
   try:
@@ -68,6 +68,8 @@ def main_step():
   s2_end = time.time()
   print("step 2: generate uniqu step time: ", s2_end - s1_end)
   #---------step3 merge------#
+  print('do not merge.... exit now')
+  exit(0)
   id_name_map = dict()
   with open(infile_list, 'r') as f:
     index = 0

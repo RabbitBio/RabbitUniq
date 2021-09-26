@@ -52,10 +52,10 @@ class Write_file
         void operator()();
 };
 
-void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, vector<string> &ids);
+void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids);
 
-void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, int maxbit_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, vector<string> &ids);
+void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, int maxbit_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids);
 
-void get_unique_kmer(const string *file_name, int kmer_len, vector<string> &ids, Write_file &w_file);
+void get_unique_kmer(const string& file_name, int kmer_len, const vector<string> &ids, Write_file &w_file);
 
 #endif

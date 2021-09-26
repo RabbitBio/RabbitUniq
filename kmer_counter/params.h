@@ -162,7 +162,7 @@ struct CKMCParams {
 		p_verbose = false;
 		p_both_strands = true;
 		p_p1 = 9;	
-		p_n_bins = 512;		
+		p_n_bins = 1000;		
 	}
 };
 

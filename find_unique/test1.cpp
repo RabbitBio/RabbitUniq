@@ -25,8 +25,8 @@ void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file 
 
 int main(int argc, char **argv)
 {
-    vector<string> v(10000);
-    for(int i = 0; i < 10000; i++)
+    vector<string> v(100000);
+    for(int i = 0; i < 100000; i++)
         v[i] = to_string(i);
     //void get_unique_kmer(const string *file_name, int kmer_len, vector<string> &ids, Write_file &w_file)
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
 
     string file_name(argv[1]);
-    thread t1(get_unique_kmer, &file_name, 25, std::ref(v), std::ref(w_file));
+    thread t1(get_unique_kmer, &file_name, 19, std::ref(v), std::ref(w_file));
     thread t2(std::ref(w_file));
     t1.join();
     t2.join();
