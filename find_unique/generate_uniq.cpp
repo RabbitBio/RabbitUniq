@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 
     vector<thread> threads;
 
-    int work_th = 20;
+    int work_th = 40;
     for(int i = 0; i < work_th; i++)
         threads.emplace_back(thread_fun, &file_vectors, &v, &w_file, stoi(argv[2]));
 

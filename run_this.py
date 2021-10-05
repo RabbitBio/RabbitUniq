@@ -6,7 +6,7 @@ import glob
 import sys
 import time
 
-KMERLEN=19
+KMERLEN=21
 
 
 def merge(infile, outfile, id_name_map):
@@ -35,29 +35,32 @@ def merge(infile, outfile, id_name_map):
 def main_step():
   if not os.path.exists(work_space):
     os.mkdir(work_space)
+  file_path = os.path.dirname(os.path.realpath(__file__))
+  bin_dir = os.path.join(file_path, 'bin')
   #---------step1-----------#
   s1_start = time.time()
-  # - try:
-  # -   kmc_out = subprocess.check_output(["./bin/kmc",
-  # -                                      '-k'+str(KMERLEN),
-  # -                                      '-fm', '@'+infile_list,
-  # -                                      "tmp", work_space])
-  # -   id2filenames = set(kmc_out.decode().split('\n'))
-  # -   print("id2filenames: ", id2filenames)
-  # -   for s in id2filenames:
-  # -     print(s)
-  # - except e:
-  # -   print("run kmc error!")
-  # - 
-  # - with open(os.path.join(work_space, 'binList.list'), 'w') as f:
-  # -   for filename in glob.glob(os.path.join(work_space, "*.bin")):
-  # -     f.write(filename + '\n')
+  try:
+    kmc_out = subprocess.check_output([os.path.join(bin_dir, 'kmc'),
+                                       '-k'+str(KMERLEN),
+                                       '-n'+str(2000),
+                                       '-fm', '@'+infile_list,
+                                       "tmp", work_space])
+    id2filenames = set(kmc_out.decode().split('\n'))
+    print("id2filenames: ", id2filenames)
+    for s in id2filenames:
+      print(s)
+  except e:
+    print("run kmc error!")
+  
+  with open(os.path.join(work_space, 'binList.list'), 'w') as f:
+    for filename in glob.glob(os.path.join(work_space, "*.bin")):
+      f.write(filename + '\n')
   s1_end = time.time()
   print("step 1: kmc step time: ", s1_end - s1_start)
   
   #---------step2-----------#
   try:
-    gu_out = subprocess.check_output(['./bin/generate_uniq',
+    gu_out = subprocess.check_output([os.path.join(bin_dir, 'generate_uniq'),
                                       os.path.join(work_space, "binList.list"),
                                       str(KMERLEN)])
   except subprocess.CalledProcessError as e:

@@ -281,7 +281,7 @@ void Write_file::push(char* buf, int buf_pos)
     lock_guard<mutex> lk(mut);
     dq.push_back({buf, buf_pos});
     data_cond.notify_one();
-    cout << "push, and size of dq is: " << dq.size() << endl;
+    //cout << "push, and size of dq is: " << dq.size() << endl;
     //buf = new char[buflen];
 }
 
@@ -470,7 +470,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     //list<kmer_node> kmerslist;
     vector<kmer_node> kmerslist;
 
-    for(int i = 0; i < file_size; )
+    for(uint64_t i = 0; i < file_size; )
     {
         uint64_t file_id = *((uint64_t*)(buf + i));
         i += sizeof(uint64_t);
