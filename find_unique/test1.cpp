@@ -4,7 +4,7 @@
 #include <thread>
 #include <string>
 #include <atomic>
-#include "unique_kmer.h"
+#include "unique_kmer_new.h"
 
 using namespace std;
 
@@ -19,7 +19,7 @@ void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file 
         if(i >= 512)
             break;
         string s = (*file_names)[i];
-        get_unique_kmer(s, 21, *v_kinds, *w_file);
+        get_unique_kmer(s, 25, *v_kinds, *w_file);
     }
 }
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
 
     string file_name(argv[1]);
-    thread t1(get_unique_kmer, file_name, 21, std::ref(v), std::ref(w_file));
+    thread t1(get_unique_kmer, file_name, 25, std::ref(v), std::ref(w_file));
     thread t2(std::ref(w_file));
     t1.join();
     t2.join();

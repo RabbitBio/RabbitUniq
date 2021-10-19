@@ -6,7 +6,7 @@ import glob
 import sys
 import time
 
-KMERLEN=21
+KMERLEN=25
 
 
 def merge(infile, outfile, id_name_map):

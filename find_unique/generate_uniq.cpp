@@ -9,6 +9,7 @@
 using namespace std;
 
 atomic_int file_index(-1);
+//atomic_int file_index(900);
 
 void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file *w_file, int kmer_len)
 {
