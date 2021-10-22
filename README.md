@@ -13,3 +13,6 @@ make
 ``` bash
 ./bin/find_uniq
 ```
+### All-in-one step
+``` bash
+./run_this.py workspace filelist outfilename.fna

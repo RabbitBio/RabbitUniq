@@ -36,6 +36,7 @@ $(KMC_MAIN_DIR)/raduls_avx.o
 UNIQ_OBJS = \
 $(UNIQ_MAIN_DIR)/unique_kmer_new.o \
 $(UNIQ_MAIN_DIR)/generate_uniq.o
+#$(UNIQ_MAIN_DIR)/generate_uniq_split.o
 
 CHANGE_FORMAT_OBJS= \
 $(UNIQ_MAIN_DIR)/change_format.o \
