@@ -381,7 +381,8 @@ void Flush_org(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write
 
 void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids)
 {
-  uint64_t *tmpbuf = new uint64_t[2 * maxbufsize];
+  //uint64_t *tmpbuf = new uint64_t[2 * maxbufsize];
+  uint64_t *tmpbuf = new uint64_t[2 * buf_pos];
   int tmpbufsize = 0;
   for (int x = 0; x < buf_pos; x++)
   {
@@ -393,7 +394,8 @@ void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_fil
   buf_pos = 0;
 }
 
-void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids)
+void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, 
+                 int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids)
 {
 	const uint64_t notuniq = -1;
 	for(auto& k : kmerslist){
@@ -592,7 +594,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
 
     //list<kmer_node> kmerslist;
     //vector<kmer_node> kmerslist;
-	unordered_map<uint64_t, uint64_t> kmerslist;
+    unordered_map<uint64_t, uint64_t> kmerslist;
 
     std::cout << "processing data: " << std::endl;
     for(uint64_t i = 0; i < file_size; )
@@ -626,13 +628,13 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
         for(int r = 0; r < kmer_len - 1; r++)
         {
             uint8_t base = kmer_tmp & 0x3;
-            kmer_rvs += base;
+            //kmer_rvs += base;
+            kmer_rvs += (base ^ 0b10);
             kmer_tmp >>= 2;
             kmer_rvs <<= 2;
         }
-        //kmer_rvs += kmer_tmp;
-        //kmer_rvs = (~kmer_rvs) & (mask >> 2);
-        kmer_rvs = (~kmer_rvs) & mask;
+        //kmer_rvs = (~kmer_rvs) & mask;
+        kmer_rvs = kmer_rvs & mask;
 
         int index = 2 * kmer_len - 4; //start from 0
         for(int j = 0; j <= super_kmer_len - kmer_len; j++)
@@ -648,7 +650,8 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
             kmer &= mask;
 
             kmer_rvs >>= 2;
-            base = 3 - base;
+            //base = 3 - base;
+            base = base ^ 0b10;
             kmer_rvs |= (base << ((kmer_len - 1) * 2));
 
             //kmerslist.emplace_back(kmer, file_id);
@@ -667,7 +670,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     kmer_node nodebuf[1024 * 4];
     int buf_pos_ = 0;
     //find_unique(kmerslist, kmer_len, 0, 8, (kmer_len * 2 + 7) / 8 * 8, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
-	find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
+    find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
     if(buf_pos_ != 0)
     {
         //void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file)
@@ -754,7 +757,8 @@ void get_unique_kmer_2(const string &file_name, int kmer_len,
             kmer &= mask;
 
             kmer_rvs >>= 2;
-            base = 3 - base;
+            //base = 3 - base;
+            base = base ^ 0b10;
             kmer_rvs |= (base << ((kmer_len - 1) * 2));
 
             //kmerslist.emplace_back(kmer, file_id);

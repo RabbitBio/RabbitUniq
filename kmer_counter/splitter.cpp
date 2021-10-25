@@ -43,10 +43,14 @@ CSplitter::CSplitter(CKMCParams &Params, CKMCQueues &Queues)
 	// Prepare encoding of symbols
 	for (int i = 0; i < 256; ++i)
 		codes[i] = -1;
+	//codes['A'] = codes['a'] = 0;
+	//codes['C'] = codes['c'] = 1;
+	//codes['G'] = codes['g'] = 2;
+	//codes['T'] = codes['t'] = 3;
 	codes['A'] = codes['a'] = 0;
 	codes['C'] = codes['c'] = 1;
-	codes['G'] = codes['g'] = 2;
-	codes['T'] = codes['t'] = 3;
+	codes['G'] = codes['g'] = 3;
+	codes['T'] = codes['t'] = 2;
 
 	n_reads = 0;
 	bins = nullptr;

@@ -77,6 +77,18 @@ int write_one(int argc, char **argv)
     return 0;
 }
 
+char m[4] = {'A', 'C', 'T', 'G'};
+string kmer_bit2char(uint64_t kmer, int kmer_len){
+  char tmp[kmer_len + 2];
+  tmp[kmer_len] = '\n';
+  tmp[kmer_len+1] = '\0';
+  for(int i = 0; i < kmer_len; ++i){
+    tmp[kmer_len - i - 1] = m[kmer & 0x03];
+    kmer >>= 2;
+  }
+  return string(tmp);
+}
+
 int write_binary(string& input_file, string& result_file, map<uint64_t, string>& fid2fname)
 {
   map<uint64_t, vector<uint64_t>> r;
@@ -124,6 +136,7 @@ int write_binary(string& input_file, string& result_file, map<uint64_t, string>&
   for(uint64_t i = 0; i < node_size; i+=2){
     uint64_t id   = buf[i];
     uint64_t kmer = buf[i+1];
+    //kmer = redecode_the_kmer(kmer);
     r[id].push_back(kmer);
     //if (i % 1000000 == 0)
     //  cout << ".";
@@ -148,7 +161,71 @@ int write_binary(string& input_file, string& result_file, map<uint64_t, string>&
       out << fid2fname[b->first] << '\n';
       //for(int i = 0; i < kmers.size(); i++)
       //out << kmers[i];
+      uint64_t ksize = kmers.size();
+      out.write(reinterpret_cast<char*>(&ksize), 8);
       out.write(reinterpret_cast<char*>(kmers.data()), kmers.size() * sizeof(uint64_t) / sizeof(char)); 
+      cout << fid2fname[b->first] << " out put " << ksize << " kmers!" << endl;
+      //out << "\n";
+  }
+
+  out.close();
+  cout << "write over" << endl;
+  return 0;
+}
+
+int write_character(string& input_file, string& result_file, 
+                    map<uint64_t, string>& fid2fname, const int kmer_len)
+{
+  map<uint64_t, vector<string>> r;
+
+  int fd = open(input_file.c_str(), O_RDONLY, 0);
+  if(fd == -1)
+  {
+    cerr << "open file : " << input_file << "fail\n";
+    exit(1);
+  }
+  uint64_t file_size = lseek(fd, 0, SEEK_END);
+  const uint64_t node_size = file_size >> 3; // 8 = sizeof(uint64) / sizeof(char)
+  uint64_t *buf = (uint64_t*)(mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0));
+
+  for(uint64_t i = 0; i < node_size; i+=2){
+    uint64_t id   = buf[i];
+    uint64_t kmer = buf[i+1];
+    string kc = kmer_bit2char(kmer, kmer_len);
+    if( kc.size() != kmer_len + 1){
+      cerr << "err length: " << kc << " - " << kmer_len << endl;
+    }
+    r[id].push_back(kc);
+    //if (i % 1000000 == 0)
+    //  cout << ".";
+    if (i % 1000000 == 0){
+      printf("\r complete [%.2f%%]", i * 100.0f / node_size);
+    }
+  }
+  close(fd);
+  munmap(buf, file_size);
+
+  fstream out(result_file, ios::out|ios::binary);
+  if(!out)
+  {
+      cerr << "open " << result_file << " fail" << endl;
+      exit(0);
+  }
+
+  for(auto b = r.begin(); b != r.end(); b++)
+  {
+      vector<string> &kmers = b->second;
+      out << '>' << fid2fname[b->first] << '\n';
+      //for(int i = 0; i < kmers.size(); i++)
+      //out << kmers[i];
+      uint64_t ksize = kmers.size();
+      //out.write(reinterpret_cast<char*>(&ksize), 8);
+      //out.write(reinterpret_cast<char*>(kmers.data()), kmers.size() * sizeof(uint64_t) / sizeof(char)); 
+      for(string& s: kmers){
+        out.write(s.data(), s.size());
+      }
+      cout << fid2fname[b->first] << " out put " << ksize << " kmers!" << endl;
+      //out << "\n";
   }
 
   out.close();
@@ -218,7 +295,7 @@ int main(int argc, char **argv){
   }
 
   write_binary(input_file, result_file, id2fname);
-
+  //write_character(input_file, result_file, id2fname, kmer_len);
   //write_split(argc, argv);
   return 0;
 }

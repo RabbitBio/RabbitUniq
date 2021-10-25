@@ -6,7 +6,7 @@ import glob
 import sys
 import time
 
-KMERLEN=19
+KMERLEN=25
 
 
 def merge(infile, outfile, id_name_map):
@@ -71,19 +71,26 @@ def main_step():
   s2_end = time.time()
   print("step 2: generate uniqu step time: ", s2_end - s1_end)
   #---------step3 merge------#
-  print('do not merge.... exit now')
-  exit(0)
-  id_name_map = dict()
-  with open(infile_list, 'r') as f:
-    index = 0
-    for line in f:
-      id_name_map[str(index)] = line.split('/')[-1].strip()
-      index += 1
-  #print(id_name_map)
-  merge('./outfile.txt', out_file, id_name_map)
-  os.remove('./outfile.txt')
+  ##print('do not merge.... exit now')
+  ##exit(0)
+  #- id_name_map = dict()
+  #- with open(infile_list, 'r') as f:
+  #-   index = 0
+  #-   for line in f:
+  #-     id_name_map[str(index)] = line.split('/')[-1].strip()
+  #-     index += 1
+  #- #print(id_name_map)
+  #- merge('./outfile.txt', out_file, id_name_map)
+  #- os.remove('./outfile.txt')
+  try:
+    cf_out = subprocess.check_output([os.path.join(bin_dir, 'change_format'),
+                                       "./outfile.txt", out_file, infile_list])
+  except subprocess.CalledProcessError as e:
+    print("run change format error")
+    print(e.output)
+    exit(-1)
   s3_end = time.time()
-  print("step 3: merge step(python) time: ", s3_end - s2_end)
+  print("step 3: merge step time: ", s3_end - s2_end)
 
 if __name__ == "__main__":
   if len(sys.argv) < 4:
