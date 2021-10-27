@@ -9,8 +9,12 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include "./robin_hood.h"
 
 using namespace std;
+
+template<typename Key, typename Value>
+using unordered_map = robin_hood::unordered_map<Key, Value>;
 
 int write_one(int argc, char **argv)
 {
@@ -91,38 +95,7 @@ string kmer_bit2char(uint64_t kmer, int kmer_len){
 
 int write_binary(string& input_file, string& result_file, map<uint64_t, string>& fid2fname)
 {
-  map<uint64_t, vector<uint64_t>> r;
-
-  /*
-  fstream in(input_file, ios::in);
-  if(!in)
-  {
-      cerr << "open " << input_file << " fail" << endl;
-      exit(0);
-  }
-
-  uint64_t count = 0;
-
-  while(!in.eof())
-  {
-    const int nodes_per_read = 4096; 
-    uint64_t nodes[2 * nodes_per_read];
-    //in.read((char*)node, 2 * sizeof(uint64_t));
-    in.read((char*)nodes, nodes_per_read * 2 * sizeof(uint64_t));
-    for (unsigned i = 0; i < nodes_per_read; ++i)
-    {
-      uint64_t id   = nodes[2*i + 0];
-      uint64_t kmer = nodes[2*i + 1];
-      r[id].push_back(kmer);
-      count++;
-      if (count % 100000 == 0)
-        cout << ".";
-    }
-  }
-  cout << endl;
-  in.close();
-  cout << "read over" << endl;
-  */
+  unordered_map<uint64_t, vector<uint64_t>> r;
 
   int fd = open(input_file.c_str(), O_RDONLY, 0);
   if(fd == -1)
@@ -155,16 +128,17 @@ int write_binary(string& input_file, string& result_file, map<uint64_t, string>&
       exit(0);
   }
 
-  for(auto b = r.begin(); b != r.end(); b++)
+  //for(auto b = r.begin(); b != r.end(); b++)
+  for(auto &b: r)
   {
-      vector<uint64_t> &kmers = b->second;
-      out << fid2fname[b->first] << '\n';
+      vector<uint64_t> &kmers = b.second;
+      out << fid2fname[b.first] << '\n';
       //for(int i = 0; i < kmers.size(); i++)
       //out << kmers[i];
       uint64_t ksize = kmers.size();
       out.write(reinterpret_cast<char*>(&ksize), 8);
       out.write(reinterpret_cast<char*>(kmers.data()), kmers.size() * sizeof(uint64_t) / sizeof(char)); 
-      cout << fid2fname[b->first] << " out put " << ksize << " kmers!" << endl;
+      cout << fid2fname[b.first] << " out put " << ksize << " kmers!" << endl;
       //out << "\n";
   }
 

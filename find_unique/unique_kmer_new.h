@@ -23,9 +23,16 @@
 #include <unistd.h>
 
 #include "robin_hood.h"
+#include <sys/time.h>
 
 template<typename Key, typename Value>
 using unordered_map = robin_hood::unordered_map<Key, Value>;
+
+inline double get_time(){
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000;
+}
 
 using namespace std;
 
@@ -58,11 +65,16 @@ class Write_file
 {
     private:
         //deque<pair<char*, int>> dq;
-        deque<pair<uint64_t*, int>> dq;
+        //deque<pair<uint64_t*, int>> dq;
+        std::pair<uint64_t*, int> * arr; 
+        atomic_int write_pos;
+        int read_pos;
+
         mutex mut;
         condition_variable data_cond;
         int finished;
-        fstream f;
+        //fstream f;
+        FILE* f;
         atomic_int has_finished;
     public:
         Write_file(const string& file_name, int finished_);

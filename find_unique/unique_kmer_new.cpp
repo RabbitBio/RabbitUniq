@@ -1,7 +1,10 @@
 #include "unique_kmer_new.h"
 #include <unordered_set>
 #include <deque>
+#include <mutex>
 
+
+std::mutex cout_mut;
 //test rsync
 
 const char kmerToBase[256][4] = 
@@ -266,27 +269,36 @@ const char kmerToBase[256][4] =
 
 Write_file::Write_file(const string& file_name, int finished_) : finished(finished_), has_finished(0)
 {
-    f.open(file_name, ios::out);
+    //f.open(file_name, ios::out);
+    f = fopen(file_name.c_str(), "wb");
     if(!f)
     {
         cerr << "open file " << file_name << " fail\n";
         exit(1);
     }
+    arr = new std::pair<uint64_t*, int>[1<<20];
+    memset(arr, 0, sizeof(std::pair<uint64_t*, int>) * (1 << 20)); //-------????
+    write_pos = 0;
+    read_pos = 0;
 }
 
 Write_file::~Write_file()
 {
-    if(f.is_open())
-        f.close();
+    //if(f.is_open())
+    //    f.close();
+    if(f){
+      fclose(f);
+      f = NULL;
+    }
 }
 
 void Write_file::push(uint64_t* buf, int buf_pos)
 {
-    lock_guard<mutex> lk(mut);
-    dq.push_back({buf, buf_pos});
-    //delete [] buf;
-    data_cond.notify_one();
+    //lock_guard<mutex> lk(mut);
+    //dq.push_back({buf, buf_pos});
+    //data_cond.notify_one();
     //cout << "push, and size of dq is: " << dq.size() << endl;
+    arr[write_pos++] = {buf, buf_pos};
 }
 
 void Write_file::set_finished()
@@ -298,6 +310,45 @@ void Write_file::set_finished()
 
 void Write_file::operator()()
 {
+  double s = get_time();
+  char *barry = new char[222ul * (1ul << 30)];
+  uint64_t p_barry = 0;
+  while(true){
+    while( has_finished != finished && read_pos >= write_pos ){
+      usleep(50);
+    }
+    if(read_pos >= write_pos){
+      break;
+    }
+    while(arr[read_pos].first == nullptr)
+      usleep(10);
+
+    //f.write((char*)(arr[read_pos].first), arr[read_pos].second * 8);
+    fwrite((char*)(arr[read_pos].first), arr[read_pos].second * 8, 1, f);
+    //memcpy(barry + p_barry, arr[read_pos].first, arr[read_pos].second*8);
+    //p_barry += arr[read_pos].second*8;
+
+    delete [] arr[read_pos].first;
+    read_pos++;
+  }
+  double e = get_time();
+  double ti = e - s;
+  {
+    std::lock_guard<std::mutex> lk(cout_mut);
+    cout << "write over**************************!!!!!!!!!! time " << ti << endl;
+  }
+  //double s2 = get_time();
+  //fwrite(barry, p_barry, 1, f);
+  //delete [] barry;
+  //double e2 = get_time();
+  //double ti2 = e2 - s2;
+  //{
+  //  std::lock_guard<std::mutex> lk(cout_mut);
+  //  cout << "write big array time " << ti2 << endl;
+  //}
+
+    /*
+    double s = get_time();
     while(true)
     {
         unique_lock<mutex> lk(mut);
@@ -326,58 +377,15 @@ void Write_file::operator()()
             p.second * sizeof(uint64_t) / sizeof(char));
         delete [] p.first;
     }
-}
-
-/*
-void Flush_org(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids)
-{
-    
-    char *tmpbuf = new char[96 * maxbufsize];
-    int tmpbufsize = 0;
-
-    for(int x = 0; x < maxbufsize; x++)
+    double e = get_time();
+    double ti = e - s;
     {
-        tmpbuf[tmpbufsize++] = '>';
-        //cout << "id = " << buf[x].id << endl;
-        const string &idstring = ids[buf[x].id];
-        //cout << buf[x].id << endl;
-        const char* idstringcp = idstring.c_str();
-        std::copy(idstringcp, idstringcp + idstring.size(), tmpbuf + tmpbufsize);
-        tmpbufsize += idstring.size();
-        tmpbuf[tmpbufsize++] = '\n';
-
-        int kmer_len_bytes = (kmer_len / 4);
-        uint8_t *bases = (((uint8_t*)(&(buf[x].kmer))) + kmer_len_bytes);
-        //TODO uint8_t
-        int kmer_len_mode_8 = kmer_len % 4;
-
-        switch(kmer_len_mode_8)
-        {
-            case 3:
-                tmpbuf[tmpbufsize++] = kmerToBase[*bases][1];
-            case 2:
-                tmpbuf[tmpbufsize++] = kmerToBase[*bases][2];
-            case 1:
-                tmpbuf[tmpbufsize++] = kmerToBase[*bases][3];
-        }
-
-        bases--;
-        //kmer_len_bytes--;
-
-        for(int z = 0; z < kmer_len_bytes; z++)
-        {
-            std::copy(kmerToBase[*bases], kmerToBase[*bases] + 4, tmpbuf + tmpbufsize);    
-            tmpbufsize += 4;
-            bases--;
-        }
-
-        tmpbuf[tmpbufsize++] = '\n';
+      std::lock_guard<std::mutex> lk(cout_mut);
+      cout << "write over**************************!!!!!!!!!! time " << ti << endl;
     }
-
-    w_file.push(tmpbuf, tmpbufsize);
-    buf_pos = 0;
+    */
 }
-*/
+
 
 void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids)
 {
@@ -414,7 +422,6 @@ void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kme
 
 
 //---------------------------------------
-std::mutex cout_mut;
 void Flush2(uint64_t fid, kc_t &kc, Write_file2 &w_file, const vector<string> fid2fname)
 {
   //lock_guard<mutex> lk(mut);
@@ -667,10 +674,11 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     close(fd);
     munmap(buf, file_size);
 
-    kmer_node nodebuf[1024 * 4];
+    const int MAXBUFSIZE = 1 << 19;
+    kmer_node *nodebuf = new kmer_node[MAXBUFSIZE];
     int buf_pos_ = 0;
     //find_unique(kmerslist, kmer_len, 0, 8, (kmer_len * 2 + 7) / 8 * 8, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
-    find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
+    find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids);
     if(buf_pos_ != 0)
     {
         //void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file)
@@ -682,7 +690,8 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     unordered_map<uint64_t, uint64_t>().swap(kmerslist);
 
     w_file.set_finished();
-    //cout << "over**************************!!!!!!!!!!\n";
+    delete nodebuf;
+   
 }
 
 void get_unique_kmer_2(const string &file_name, int kmer_len, 

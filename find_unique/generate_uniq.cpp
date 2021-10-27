@@ -11,9 +11,11 @@ using namespace std;
 
 atomic_int file_index(-1);
 //atomic_int file_index(900);
+std::mutex cout_mut2;
 
 void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file *w_file, int kmer_len)
 {
+    double start_time = get_time();
     const int n_files = file_names->size();
     while(true)
     {
@@ -26,6 +28,12 @@ void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file 
         //string s = (*file_names)[i];
         get_unique_kmer(s, kmer_len, *v_kinds, *w_file);
         cout << i << " - " << s << " done" << endl;
+    } 
+    double end_time = get_time();
+    double ti = end_time - start_time;
+    {
+    std::lock_guard<std::mutex> lk(cout_mut2);
+    cout << "over**************************!!!!!!!!!! time " << ti << endl;
     }
 }
 
@@ -58,7 +66,9 @@ int main(int argc, char **argv)
 
     cout << file_vectors.size() << endl;
 
-    Write_file w_file("outfile.txt", file_vectors.size());
+    string outfile_txt(argv[3]);
+    //Write_file w_file("outfile.txt", file_vectors.size());
+    Write_file w_file(outfile_txt, file_vectors.size());
     thread t(std::ref(w_file));
 
     vector<thread> threads;
