@@ -5,8 +5,8 @@
 
 
 std::mutex cout_mut;
-
 //test rsync
+
 const char kmerToBase[256][4] = 
 {
      {'A', 'A', 'A', 'A'},
@@ -386,6 +386,7 @@ void Write_file::operator()()
     */
 }
 
+
 void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids)
 {
   //uint64_t *tmpbuf = new uint64_t[2 * maxbufsize];
@@ -418,6 +419,7 @@ void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kme
       Flush(buf, maxbufsize, kmer_len, buf_pos, w_file, ids);
   }
 }
+
 
 inline void print(uint64_t kmer, int kl)
 {

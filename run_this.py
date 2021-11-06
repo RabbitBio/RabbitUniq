@@ -5,8 +5,8 @@ import os
 import glob
 import sys
 import time
+import argparse
 
-KMERLEN=19
 
 
 def merge(infile, outfile, id_name_map):
@@ -32,7 +32,12 @@ def merge(infile, outfile, id_name_map):
 
 
 
-def main_step():
+def main_step(args):
+  work_space       = args.workspace
+  infile_list      = args.infile_list
+  out_file         = args.outfile
+  gu_thread_number = args.gu_worker
+  KMERLEN          = args.kmer_len
   if not os.path.exists(work_space):
     os.mkdir(work_space)
   file_path = os.path.dirname(os.path.realpath(__file__))
@@ -62,7 +67,7 @@ def main_step():
   try:
     gu_out = subprocess.check_output([os.path.join(bin_dir, 'generate_uniq'),
                                       os.path.join(work_space, "binList.list"),
-                                      str(KMERLEN)])
+                                      str(KMERLEN), "outfile.txt", str(gu_thread_number)])
   except subprocess.CalledProcessError as e:
     print("run gene uniq error!")
     print(e.output)
@@ -93,10 +98,19 @@ def main_step():
   print("step 3: merge step time: ", s3_end - s2_end)
 
 if __name__ == "__main__":
-  if len(sys.argv) < 4:
-    print("./run_this.py [tmp workspace] [fasta file list] [result file]")
-    exit(-1)
-  work_space = sys.argv[1] #"./workspace"
-  infile_list = sys.argv[2]
-  out_file = sys.argv[3]
-  main_step()
+  #if len(sys.argv) < 4:
+  #  print("./run_this.py [tmp workspace] [fasta file list] [result file] [gen uniq thread number]")
+  #  exit(-1)
+  #work_space = sys.argv[1] #"./workspace"
+  #infile_list = sys.argv[2]
+  #out_file = sys.argv[3]
+  #gu_thread_number = sys.argv[4]
+
+  parser = argparse.ArgumentParser(description = "RabbitUniq")
+  parser.add_argument('--workspace', '-w', help = "", type = str, required = False, default = "workspace")
+  parser.add_argument('--infile_list', '-l', help = "", type = str, required = True)
+  parser.add_argument('--outfile', '-o', help = "", type = str, required = True)
+  parser.add_argument('--gu_worker', '-n', help = "", type = int, required = True)
+  parser.add_argument('--kmer_len', '-k', help = "", type = int, required = False, default = 25)
+  args = parser.parse_args()
+  main_step(args)

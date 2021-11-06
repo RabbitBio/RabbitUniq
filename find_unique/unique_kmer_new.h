@@ -85,37 +85,11 @@ class Write_file
         void operator()();
 };
 
-class Write_file2
-{
-    private:
-        //deque<pair<char*, int>> dq;
-        deque<tuple<uint64_t, uint64_t*, int>> dq;
-        mutex mut;
-        condition_variable data_cond;
-        int finished;
-        fstream f;
-        atomic_int has_finished;
-        unordered_map<uint64_t, std::string> fid2fname;
-        unordered_map<uint64_t, FILE*> opened_files;
-        deque<uint64_t> q_opened;
-    public:
-        void write_to_file(std::tuple<uint64_t, uint64_t*, int>& p);
-        Write_file2(string file_name, int finished_, vector<string> &id2fname);
-        ~Write_file2();
-        //void push(char* buf, int buf_pos);
-        void push(uint64_t fid, uint64_t* buf, int buf_pos);
-        void set_finished();
-        void operator()();
-};
-
 void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids);
 
 //void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, int maxbit_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids);
 void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids);
 
 void get_unique_kmer(const string& file_name, int kmer_len, const vector<string> &ids, Write_file &w_file);
-void get_unique_kmer_2(const string &file_name, int kmer_len, 
-                       const vector<string> &ids, Write_file2 &w_file,
-                       vector<kc_t>& kmer_collections);
 
 #endif

@@ -93,7 +93,8 @@ string kmer_bit2char(uint64_t kmer, int kmer_len){
   return string(tmp);
 }
 
-int write_binary(string& input_file, string& result_file, map<uint64_t, string>& fid2fname)
+int write_binary(string& input_file, string& result_file, 
+                map<uint64_t, string>& fid2fname, uint64_t exclude_id)
 {
   unordered_map<uint64_t, vector<uint64_t>> r;
 
@@ -110,7 +111,9 @@ int write_binary(string& input_file, string& result_file, map<uint64_t, string>&
     uint64_t id   = buf[i];
     uint64_t kmer = buf[i+1];
     //kmer = redecode_the_kmer(kmer);
-    r[id].push_back(kmer);
+    if(id != exclude_id){
+      r[id].push_back(kmer);
+    }
     //if (i % 1000000 == 0)
     //  cout << ".";
     if (i % 1000000 == 0){
@@ -252,23 +255,34 @@ int write_split(int argc, char **argv){
 
 int main(int argc, char **argv){
   if (argc < 3){
-    cerr << "change_format [infile] [outfile] [flist.list]" << endl;
+    cerr << "change_format [infile] [outfile] [flist.list] [(optional)exclude_file]" << endl;
     exit(-1);
   }
   string input_file(argv[1]);
   string result_file(argv[2]);
   string file_list_path(argv[3]);
+  string exclude_file = "";
+  if(argc == 5){
+    exclude_file = string(argv[4]);
+  }
   map<uint64_t, std::string> id2fname;
   ifstream flist(file_list_path, ios::in);
   char ref_name[256];
   uint64_t fid = 0;
+  uint64_t exclude_id = -1;
   while(!flist.eof()){
     flist.getline(ref_name, 256);
+    cout << "reading " << string(ref_name) << endl;
+    if(exclude_file != "" && string(ref_name) == exclude_file){
+      exclude_id = fid;
+      std::cout << "excluding file: " << exclude_file << " id: " << exclude_id << endl;
+    }
     id2fname[fid] = string(ref_name);
     fid++;
   }
+  cout << "assign done" << endl;
 
-  write_binary(input_file, result_file, id2fname);
+  write_binary(input_file, result_file, id2fname, exclude_id);
   //write_character(input_file, result_file, id2fname, kmer_len);
   //write_split(argc, argv);
   return 0;
