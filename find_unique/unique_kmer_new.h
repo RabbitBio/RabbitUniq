@@ -88,8 +88,8 @@ class Write_file
 void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids);
 
 //void find_unique(vector<kmer_node> &v, int kmer_len, int bitstart, int bitlen, int maxbit_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids);
-void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids);
+void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids, uint64_t exclude_id);
 
-void get_unique_kmer(const string& file_name, int kmer_len, const vector<string> &ids, Write_file &w_file);
+void get_unique_kmer(const string& file_name, int kmer_len, const vector<string> &ids, Write_file &w_file, uint64_t exclude_id);
 
 #endif

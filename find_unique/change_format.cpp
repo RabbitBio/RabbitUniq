@@ -261,10 +261,9 @@ int main(int argc, char **argv){
   string input_file(argv[1]);
   string result_file(argv[2]);
   string file_list_path(argv[3]);
-  string exclude_file = "";
-  if(argc == 5){
-    exclude_file = string(argv[4]);
-  }
+	const int kmer_len = stoi(argv[4]);
+	bool out_character = kmer_len == 0 ? true : false;
+
   map<uint64_t, std::string> id2fname;
   ifstream flist(file_list_path, ios::in);
   char ref_name[256];
@@ -272,18 +271,20 @@ int main(int argc, char **argv){
   uint64_t exclude_id = -1;
   while(!flist.eof()){
     flist.getline(ref_name, 256);
-    cout << "reading " << string(ref_name) << endl;
-    if(exclude_file != "" && string(ref_name) == exclude_file){
-      exclude_id = fid;
-      std::cout << "excluding file: " << exclude_file << " id: " << exclude_id << endl;
-    }
+    //cout << "reading " << string(ref_name) << endl;
+    //if(exclude_file != "" && string(ref_name) == exclude_file){
+    //  exclude_id = fid;
+    //  std::cout << "excluding file: " << exclude_file << " id: " << exclude_id << endl;
+    //}
     id2fname[fid] = string(ref_name);
     fid++;
   }
-  cout << "assign done" << endl;
 
-  write_binary(input_file, result_file, id2fname, exclude_id);
-  //write_character(input_file, result_file, id2fname, kmer_len);
+	if(out_character){
+		write_character(input_file, result_file, id2fname, kmer_len);
+	}else{
+		write_binary(input_file, result_file, id2fname, exclude_id);
+	}
   //write_split(argc, argv);
   return 0;
 }

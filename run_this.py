@@ -38,6 +38,7 @@ def main_step(args):
   out_file         = args.outfile
   gu_thread_number = args.gu_worker
   KMERLEN          = args.kmer_len
+  bin_num          = args.bin_num
   if not os.path.exists(work_space):
     os.mkdir(work_space)
   file_path = os.path.dirname(os.path.realpath(__file__))
@@ -47,7 +48,7 @@ def main_step(args):
   try:
     kmc_out = subprocess.check_output([os.path.join(bin_dir, 'kmc'),
                                        '-k'+str(KMERLEN),
-                                       '-n'+str(2000),
+                                       '-n'+str(bin_num),
                                        '-fm', '@'+infile_list,
                                        "tmp", work_space])
     id2filenames = set(kmc_out.decode().split('\n'))
@@ -65,9 +66,17 @@ def main_step(args):
   
   #---------step2-----------#
   try:
+    print("running: ", " ".join([os.path.join(bin_dir, 'generate_uniq'),
+     os.path.join(work_space, "binList.list"),
+     str(KMERLEN), "outfile.txt", str(gu_thread_number),
+     infile_list,
+     str(1 if args.exclude_last else 0)
+     ]))
     gu_out = subprocess.check_output([os.path.join(bin_dir, 'generate_uniq'),
                                       os.path.join(work_space, "binList.list"),
-                                      str(KMERLEN), "outfile.txt", str(gu_thread_number)])
+                                      str(KMERLEN), "outfile.txt", str(gu_thread_number),
+                                      infile_list,
+                                      str(1 if args.exclude_last else 0)])
   except subprocess.CalledProcessError as e:
     print("run gene uniq error!")
     print(e.output)
@@ -75,21 +84,14 @@ def main_step(args):
   #print("done, out file is in outfile.txt")
   s2_end = time.time()
   print("step 2: generate uniqu step time: ", s2_end - s1_end)
-  #---------step3 merge------#
-  ##print('do not merge.... exit now')
-  ##exit(0)
-  #- id_name_map = dict()
-  #- with open(infile_list, 'r') as f:
-  #-   index = 0
-  #-   for line in f:
-  #-     id_name_map[str(index)] = line.split('/')[-1].strip()
-  #-     index += 1
-  #- #print(id_name_map)
-  #- merge('./outfile.txt', out_file, id_name_map)
-  #- os.remove('./outfile.txt')
   try:
-    cf_out = subprocess.check_output([os.path.join(bin_dir, 'change_format'),
-                                       "./outfile.txt", out_file, infile_list])
+    if args.output_char: #if output character, need kmer length
+      cf_out = subprocess.check_output([os.path.join(bin_dir, 'change_format'),
+                                        "./outfile.txt", out_file, infile_list, str(KMERLEN)])
+    else: #if not output character, output .bin files, kmer_len specify to 0
+      cf_out = subprocess.check_output([os.path.join(bin_dir, 'change_format'),
+                                        "./outfile.txt", out_file, infile_list, str(0)])
+      
   except subprocess.CalledProcessError as e:
     print("run change format error")
     print(e.output)
@@ -112,5 +114,8 @@ if __name__ == "__main__":
   parser.add_argument('--outfile', '-o', help = "", type = str, required = True)
   parser.add_argument('--gu_worker', '-n', help = "", type = int, required = True)
   parser.add_argument('--kmer_len', '-k', help = "", type = int, required = False, default = 25)
+  parser.add_argument('--bin_num', '-b', help = "", type = int, required = False, default = 2000)
+  parser.add_argument('--exclude_last', '-e', help = "", action = "store_true")
+  parser.add_argument('--output_char', '-c', help = "", action = "store_true")
   args = parser.parse_args()
   main_step(args)

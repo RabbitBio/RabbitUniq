@@ -403,11 +403,11 @@ void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_fil
 }
 
 void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, 
-                 int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids)
+                 int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids, uint64_t exclude_id)
 {
 	const uint64_t notuniq = -1;
 	for(auto& k : kmerslist){
-		if(k.second != notuniq){
+		if(k.second != notuniq && k.second != exclude_id){
 			buf[buf_pos++] = kmer_node{k.first, k.second};
 			if(buf_pos == maxbufsize)
 			{
@@ -446,7 +446,7 @@ inline void kmer_add(unordered_map<uint64_t, uint64_t> &kmerslist, const uint64_
 	}
 }
 
-void get_unique_kmer(const string &file_name, int kmer_len, const vector<string> &ids, Write_file &w_file)
+void get_unique_kmer(const string &file_name, int kmer_len, const vector<string> &ids, Write_file &w_file, uint64_t exclude_id)
 {
     int fd = open(file_name.c_str(), O_RDONLY, 0);
     if(fd == -1)
@@ -521,10 +521,10 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
             kmer_rvs |= (base << ((kmer_len - 1) * 2));
 
             //kmerslist.emplace_back(kmer, file_id);
-            kmer_add(kmerslist, kmer, file_id);
+						kmer_add(kmerslist, kmer, file_id);
 #ifdef RVS
             //kmerslist.emplace_back(kmer_rvs, file_id);
-            kmer_add(kmerslist, kmer_rvs, file_id);
+						kmer_add(kmerslist, kmer_rvs, file_id);
 #endif
         }
         i += (super_kmer_len + 3) / 4;
@@ -537,7 +537,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     kmer_node *nodebuf = new kmer_node[MAXBUFSIZE];
     int buf_pos_ = 0;
     //find_unique(kmerslist, kmer_len, 0, 8, (kmer_len * 2 + 7) / 8 * 8, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
-    find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids);
+    find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids, exclude_id);
     if(buf_pos_ != 0)
     {
         //void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file)
