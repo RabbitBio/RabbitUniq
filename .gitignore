@@ -1,6 +1,8 @@
 *.o
 *.swp
+.sync
 workspace
+code-workspace
 Experiments
 bin
 *.fa
