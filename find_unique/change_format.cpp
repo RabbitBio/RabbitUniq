@@ -262,7 +262,7 @@ int main(int argc, char **argv){
   string result_file(argv[2]);
   string file_list_path(argv[3]);
 	const int kmer_len = stoi(argv[4]);
-	bool out_character = kmer_len == 0 ? true : false;
+	bool out_character = kmer_len != 0 ? true : false;
 
   map<uint64_t, std::string> id2fname;
   ifstream flist(file_list_path, ios::in);

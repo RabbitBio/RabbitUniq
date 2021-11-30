@@ -46,6 +46,11 @@ def main_step(args):
   #---------step1-----------#
   s1_start = time.time()
   try:
+    print("step1: ", " ".join([os.path.join(bin_dir, 'kmc'),
+              '-k'+str(KMERLEN),
+              '-n'+str(bin_num),
+              '-fm', '@'+infile_list,
+              "tmp", work_space]))
     kmc_out = subprocess.check_output([os.path.join(bin_dir, 'kmc'),
                                        '-k'+str(KMERLEN),
                                        '-n'+str(bin_num),
@@ -62,11 +67,11 @@ def main_step(args):
     for filename in glob.glob(os.path.join(work_space, "*.bin")):
       f.write(filename + '\n')
   s1_end = time.time()
-  print("step 1: kmc step time: ", s1_end - s1_start)
+  print("step 1 time: ", s1_end - s1_start)
   
   #---------step2-----------#
   try:
-    print("running: ", " ".join([os.path.join(bin_dir, 'generate_uniq'),
+    print("step2: ", " ".join([os.path.join(bin_dir, 'generate_uniq'),
      os.path.join(work_space, "binList.list"),
      str(KMERLEN), "outfile.txt", str(gu_thread_number),
      infile_list,
@@ -83,12 +88,16 @@ def main_step(args):
     exit(-1)
   #print("done, out file is in outfile.txt")
   s2_end = time.time()
-  print("step 2: generate uniqu step time: ", s2_end - s1_end)
+  print("step 2 time: ", s2_end - s1_end)
   try:
     if args.output_char: #if output character, need kmer length
+      print('step3: ', ' '.join([os.path.join(bin_dir, 'change_format'),
+                                   "./outfile.txt", out_file, infile_list, str(KMERLEN)]))
       cf_out = subprocess.check_output([os.path.join(bin_dir, 'change_format'),
                                         "./outfile.txt", out_file, infile_list, str(KMERLEN)])
     else: #if not output character, output .bin files, kmer_len specify to 0
+      print('step3: ', ' '.join([os.path.join(bin_dir, 'change_format'),
+                                   "./outfile.txt", out_file, infile_list, str(0)]))
       cf_out = subprocess.check_output([os.path.join(bin_dir, 'change_format'),
                                         "./outfile.txt", out_file, infile_list, str(0)])
       
