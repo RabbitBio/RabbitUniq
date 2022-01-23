@@ -13,7 +13,8 @@ atomic_int file_index(-1);
 //atomic_int file_index(900);
 std::mutex cout_mut2;
 
-void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file *w_file, int kmer_len, uint64_t exclude_id)
+void thread_fun(vector<string> *file_names, vector<string> *v_kinds, 
+                Write_file *w_file, int kmer_len, uint64_t exclude_id, const int threshold)
 {
     double start_time = get_time();
     const int n_files = file_names->size();
@@ -26,7 +27,7 @@ void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file 
         //cout << i << endl;
         cout << "starting" << i << " - " << s << endl;
         //string s = (*file_names)[i];
-        get_unique_kmer(s, kmer_len, *v_kinds, *w_file, exclude_id);
+        get_unique_kmer(s, kmer_len, *v_kinds, *w_file, exclude_id, threshold);
         cout << i << " - " << s << " done" << endl;
     } 
     double end_time = get_time();
@@ -40,12 +41,24 @@ void thread_fun(vector<string> *file_names, vector<string> *v_kinds, Write_file 
 
 int main(int argc, char **argv)
 {
+    if (argc != 8){
+      cerr << "inside execute file of rabbitv find_uniq model:\n";
+      cerr << " [1]: file name \n";
+      cerr << " [2]: kmer length \n";
+      cerr << " [3]: output file \n";
+      cerr << " [4]: work thread number \n";
+      cerr << " [5]: file list file \n";
+      cerr << " [6]: exclude last (0 | 1)\n";
+      cerr << " [7]: threshold to considered uniq (1 default)\n";
+      exit(-1);
+    }
     const string file_name(argv[1]);
 		const int kmer_len = stoi(argv[2]);
     const string outfile_txt(argv[3]);
     const int work_th = stoi(argv[4]);
 		const string file_list(argv[5]);
 		const int exclude_last = stoi(argv[6]);
+    const int threshold = stoi(argv[7]);
 
     //vector<string> v(100000);
     //for(int i = 0; i < 100000; i++)
@@ -95,7 +108,7 @@ int main(int argc, char **argv)
     vector<thread> threads;
 
     for(int i = 0; i < work_th; i++)
-			threads.emplace_back(thread_fun, &file_vectors, &v, &w_file, kmer_len, exclude_id);
+			threads.emplace_back(thread_fun, &file_vectors, &v, &w_file, kmer_len, exclude_id, threshold);
 
     for(int i = 0; i < work_th; i++)
         threads[i].join();

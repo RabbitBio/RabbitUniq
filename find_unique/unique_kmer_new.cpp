@@ -403,7 +403,8 @@ void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_fil
 }
 
 void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, 
-                 int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids, uint64_t exclude_id)
+                 int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids, 
+                 uint64_t exclude_id)
 {
 	const uint64_t notuniq = -1;
 	for(auto& k : kmerslist){
@@ -446,7 +447,23 @@ inline void kmer_add(unordered_map<uint64_t, uint64_t> &kmerslist, const uint64_
 	}
 }
 
-void get_unique_kmer(const string &file_name, int kmer_len, const vector<string> &ids, Write_file &w_file, uint64_t exclude_id)
+inline void kmer_add_set(unordered_map<uint64_t, uint64_t> &kmerslist, unordered_map<uint64_t, std::unordered_set<uint64_t> > &kmer2set, const uint64_t kmer, const uint64_t fid, const int threshold){
+	auto re = kmerslist.find(kmer);
+
+	if (re == kmerslist.end()){
+		kmerslist.insert({kmer, fid});
+		kmer2set.insert({kmer, std::unordered_set<uint64_t>{fid}});
+	}else{
+    if(re->second == -1) return;
+
+    kmer2set[kmer].insert(fid);
+    if(kmer2set[kmer].size() > threshold){
+      re->second = -1;
+    }
+  }
+}
+
+void get_unique_kmer(const string &file_name, int kmer_len, const vector<string> &ids, Write_file &w_file, uint64_t exclude_id, const int threshold)
 {
     int fd = open(file_name.c_str(), O_RDONLY, 0);
     if(fd == -1)
@@ -461,6 +478,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     //list<kmer_node> kmerslist;
     //vector<kmer_node> kmerslist;
     unordered_map<uint64_t, uint64_t> kmerslist;
+    unordered_map<uint64_t, std::unordered_set<uint64_t>> kmer2set;
 
     std::cout << "processing data: " << std::endl;
     for(uint64_t i = 0; i < file_size; )
@@ -521,10 +539,18 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
             kmer_rvs |= (base << ((kmer_len - 1) * 2));
 
             //kmerslist.emplace_back(kmer, file_id);
-						kmer_add(kmerslist, kmer, file_id);
+            if(threshold == 1){
+              kmer_add(kmerslist, kmer, file_id);
+            }else{
+              kmer_add_set(kmerslist, kmer2set, kmer, file_id, threshold);
+            }
 #ifdef RVS
             //kmerslist.emplace_back(kmer_rvs, file_id);
-						kmer_add(kmerslist, kmer_rvs, file_id);
+            if(threshold == 1){
+              kmer_add(kmerslist, kmer_rvs, file_id);
+            }else{
+              kmer_add_set(kmerslist, kmer2set, kmer_rvs, file_id, threshold);
+            }
 #endif
         }
         i += (super_kmer_len + 3) / 4;

@@ -39,6 +39,7 @@ def main_step(args):
   gu_thread_number = args.gu_worker
   KMERLEN          = args.kmer_len
   bin_num          = args.bin_num
+  threshold        = args.threshold
   if not os.path.exists(work_space):
     os.mkdir(work_space)
   file_path = os.path.dirname(os.path.realpath(__file__))
@@ -81,7 +82,8 @@ def main_step(args):
                                       os.path.join(work_space, "binList.list"),
                                       str(KMERLEN), "outfile.txt", str(gu_thread_number),
                                       infile_list,
-                                      str(1 if args.exclude_last else 0)])
+                                      str(1 if args.exclude_last else 0),
+                                      str(threshold)])
   except subprocess.CalledProcessError as e:
     print("run gene uniq error!")
     print(e.output)
@@ -124,7 +126,8 @@ if __name__ == "__main__":
   parser.add_argument('--gu_worker', '-n', help = "The number of worker thread when generate unique kmer [default: 20]", type = int, required = False, default = 20)
   parser.add_argument('--kmer_len', '-k', help = "Unique k-mer length [default: 25]", type = int, required = False, default = 25)
   parser.add_argument('--bin_num', '-b', help = "Number of bin files to be store, from 64 to 2000[default: 512]", type = int, required = False, default = 512)
-  parser.add_argument('--exclude_last', '-e', help = "Exclude the last element in infile_list when output", action = "store_true")
+  parser.add_argument('--exclude_last', '-e', help = "Exclude the last element in infile_list when output", default=False, action = "store_true")
+  parser.add_argument('--threshold', '-s', help = "Threshold considered as unique kmer", type = int, required = False, default = 1)
   parser.add_argument('--output_char', '-c', help = "Output the unique k-mer collection in character-based file instead of binary file (slower, so not recommended)", action = "store_true")
   args = parser.parse_args()
   main_step(args)
