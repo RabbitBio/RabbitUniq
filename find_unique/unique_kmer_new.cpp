@@ -421,6 +421,29 @@ void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kme
   }
 }
 
+void find_unique_byset(unordered_map<uint64_t, uint64_t> &kmerslist, 
+                      unordered_map<uint64_t, std::unordered_set<uint64_t> > &kmer2set,
+                      int kmer_len, kmer_node* buf, 
+                      int &buf_pos, int maxbufsize, Write_file &w_file, 
+                      const vector<string> &ids, 
+                      uint64_t exclude_id)
+{
+	const uint64_t notuniq = -1;
+	for(auto& k : kmerslist){
+		if(k.second != notuniq && k.second != exclude_id){
+      for(auto& s: kmer2set[k.first]){
+			  buf[buf_pos++] = kmer_node{k.first, s};
+			  if(buf_pos == maxbufsize)
+			  {
+			  	Flush(buf, maxbufsize, kmer_len, buf_pos, w_file, ids);
+			  }
+      }
+		}
+	}
+  if(buf_pos != 0){
+      Flush(buf, maxbufsize, kmer_len, buf_pos, w_file, ids);
+  }
+}
 
 inline void print(uint64_t kmer, int kl)
 {
@@ -447,6 +470,11 @@ inline void kmer_add(unordered_map<uint64_t, uint64_t> &kmerslist, const uint64_
 	}
 }
 
+/*
+* Add kmer to kmerslist. This function record the k-mer that occured within 
+* `threshold` refernce genomes. and asign flag to -1 if the kmer is not 
+* unique
+*/
 inline void kmer_add_set(unordered_map<uint64_t, uint64_t> &kmerslist, unordered_map<uint64_t, std::unordered_set<uint64_t> > &kmer2set, const uint64_t kmer, const uint64_t fid, const int threshold){
 	auto re = kmerslist.find(kmer);
 
@@ -478,7 +506,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     //list<kmer_node> kmerslist;
     //vector<kmer_node> kmerslist;
     unordered_map<uint64_t, uint64_t> kmerslist;
-    unordered_map<uint64_t, std::unordered_set<uint64_t>> kmer2set;
+    unordered_map<uint64_t, std::unordered_set<uint64_t> > kmer2set;
 
     std::cout << "processing data: " << std::endl;
     for(uint64_t i = 0; i < file_size; )
@@ -539,14 +567,14 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
             kmer_rvs |= (base << ((kmer_len - 1) * 2));
 
             //kmerslist.emplace_back(kmer, file_id);
-            if(threshold == 1){
+            if(threshold <= 1){
               kmer_add(kmerslist, kmer, file_id);
             }else{
               kmer_add_set(kmerslist, kmer2set, kmer, file_id, threshold);
             }
 #ifdef RVS
             //kmerslist.emplace_back(kmer_rvs, file_id);
-            if(threshold == 1){
+            if(threshold <= 1){
               kmer_add(kmerslist, kmer_rvs, file_id);
             }else{
               kmer_add_set(kmerslist, kmer2set, kmer_rvs, file_id, threshold);
@@ -563,7 +591,12 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     kmer_node *nodebuf = new kmer_node[MAXBUFSIZE];
     int buf_pos_ = 0;
     //find_unique(kmerslist, kmer_len, 0, 8, (kmer_len * 2 + 7) / 8 * 8, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
-    find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids, exclude_id);
+    if(threshold <= 1){
+      find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids, exclude_id);
+    }else{
+      find_unique_byset(kmerslist, kmer2set, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids, exclude_id);
+    }
+
     if(buf_pos_ != 0)
     {
         //void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file)
@@ -573,6 +606,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
 
     //std::vector<kmer_node>().swap(kmerslist);
     unordered_map<uint64_t, uint64_t>().swap(kmerslist);
+    unordered_map<uint64_t, std::unordered_set<uint64_t> >().swap(kmer2set);
 
     w_file.set_finished();
     delete nodebuf;

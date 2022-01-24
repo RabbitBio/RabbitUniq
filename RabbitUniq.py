@@ -76,7 +76,8 @@ def main_step(args):
      os.path.join(work_space, "binList.list"),
      str(KMERLEN), "outfile.txt", str(gu_thread_number),
      infile_list,
-     str(1 if args.exclude_last else 0)
+     str(1 if args.exclude_last else 0),
+     str(threshold)
      ]))
     gu_out = subprocess.check_output([os.path.join(bin_dir, 'generate_uniq'),
                                       os.path.join(work_space, "binList.list"),
