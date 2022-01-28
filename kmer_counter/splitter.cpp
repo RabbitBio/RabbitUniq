@@ -670,6 +670,7 @@ bool CSplitter::ProcessReads(uint64 id, uchar *_part, uint64 _part_size, ReadTyp
 template<typename COUNTER_TYPE>
 bool CSplitter::ProcessReadsSmallK(uchar *_part, uint64 _part_size, ReadType read_type, CSmallKBuf<COUNTER_TYPE>& small_k_buf)
 {
+	cerr << "processing small k" << endl;
 	part = _part;
 	part_size = _part_size;
 	part_pos = 0;
@@ -711,7 +712,7 @@ bool CSplitter::ProcessReadsSmallK(uchar *_part, uint64 _part_size, ReadType rea
 					omit_next_n_kmers = i + 1;
 				}
 				kmer_str.set_2bits(seq[i], str_pos);
-				kmer_rev.set_2bits(3 - seq[i], rev_pos);
+				kmer_rev.set_2bits(0b10 ^ seq[i], rev_pos);
 			}
 
 			// Process next part of a read
@@ -724,7 +725,7 @@ bool CSplitter::ProcessReadsSmallK(uchar *_part, uint64 _part_size, ReadType rea
 				}
 				kmer_str.SHL_insert_2bits(seq[i]);
 				kmer_str.mask(kmer_mask);
-				kmer_rev.SHR_insert_2bits(3 - seq[i], kmer_len_shift);
+				kmer_rev.SHR_insert_2bits(0b10 ^ seq[i], kmer_len_shift);
 
 				// If necessary ommit next symbols
 				if (omit_next_n_kmers > 0)

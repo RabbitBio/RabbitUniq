@@ -71,7 +71,9 @@ template<unsigned DIVIDE_FACTOR> void CKmerBinCollector::update_n_plus_x_recs(ch
 	uint32 x;
 
 	kmer = (seq[0] << 6) + (seq[1] << 4) + (seq[2] << 2) + seq[3];
-	rev = ((3 - seq[kmer_len - 1]) << 6) + ((3 - seq[kmer_len - 2]) << 4) + ((3 - seq[kmer_len - 3]) << 2) + (3 - seq[kmer_len - 4]);
+  // [haoz:] before change encode strategy
+	//rev = ((3 - seq[kmer_len - 1]) << 6) + ((3 - seq[kmer_len - 2]) << 4) + ((3 - seq[kmer_len - 3]) << 2) + (3 - seq[kmer_len - 4]);
+	rev = ((0b10 ^ seq[kmer_len - 1]) << 6) + ((0b10 ^ seq[kmer_len - 2]) << 4) + ((0b10 ^ seq[kmer_len - 3]) << 2) + (0b10 ^ seq[kmer_len - 4]);
 
 	x = 0;
 	comparision_state current_state, new_state;
@@ -86,7 +88,10 @@ template<unsigned DIVIDE_FACTOR> void CKmerBinCollector::update_n_plus_x_recs(ch
 	for (uint32 i = 0; i < n - kmer_len; ++i)
 	{
 		rev >>= 2;
-		rev += (3 - seq[rev_pos++]) << 6;
+		// [haoz:] before change encode strategy
+		// rev += (3 - seq[rev_pos++]) << 6;
+		 rev += (0b10 ^ seq[rev_pos++]) << 6;
+
 		kmer <<= 2;
 		kmer += seq[kmer_pos++];
 

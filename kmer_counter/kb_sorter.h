@@ -353,7 +353,7 @@ template <unsigned SIZE> void CKmerBinSorter<SIZE>::ExpandKmersBoth(uint64 tmp_s
 				byte_shift -= 2;
 			kmer.SHL_insert_2bits(symb);
 			kmer.mask(kmer_mask);
-			rev_kmer.SHR_insert_2bits(3 - symb, kmer_len_shift);
+			rev_kmer.SHR_insert_2bits(0b10 ^ symb, kmer_len_shift);
 			kmer_can = kmer < rev_kmer ? kmer : rev_kmer;
 			buffer_input[input_pos++].set(kmer_can);
 		}
@@ -422,7 +422,7 @@ template<unsigned SIZE> uint64 CKmerBinSorter<SIZE>::ExpandKxmerBothParallel(uin
 			GetNextSymb(symb, byte_shift, pos, data_p);
 			kmer.SHL_insert_2bits(symb);
 			kmer.mask(kmer_mask);
-			rev_kmer.SHR_insert_2bits(3 - symb, rev_shift);
+			rev_kmer.SHR_insert_2bits(0b10 ^ symb, rev_shift);
 			--symbols_left;
 
 			if (kmer_lower)
@@ -443,7 +443,7 @@ template<unsigned SIZE> uint64 CKmerBinSorter<SIZE>::ExpandKxmerBothParallel(uin
 						GetNextSymb(symb, byte_shift, pos, data_p);
 						kmer.SHL_insert_2bits(symb);
 						kmer.mask(kmer_mask);
-						rev_kmer.SHR_insert_2bits(3 - symb, rev_shift);
+						rev_kmer.SHR_insert_2bits(0b10 ^ symb, rev_shift);
 						--symbols_left;
 
 						kmer_lower = kmer < rev_kmer;
@@ -469,7 +469,7 @@ template<unsigned SIZE> uint64 CKmerBinSorter<SIZE>::ExpandKxmerBothParallel(uin
 			{
 				if (!(kmer < rev_kmer))
 				{
-					buffer_input[output_start].set_2bits(3 - symb, kmer_len * 2 + x * 2);
+					buffer_input[output_start].set_2bits(0b10 ^ symb, kmer_len * 2 + x * 2);
 					++x;
 					if (x == max_x)
 					{
@@ -483,7 +483,7 @@ template<unsigned SIZE> uint64 CKmerBinSorter<SIZE>::ExpandKxmerBothParallel(uin
 						GetNextSymb(symb, byte_shift, pos, data_p);
 						kmer.SHL_insert_2bits(symb);
 						kmer.mask(kmer_mask);
-						rev_kmer.SHR_insert_2bits(3 - symb, rev_shift);
+						rev_kmer.SHR_insert_2bits(0b10 ^ symb, rev_shift);
 						--symbols_left;
 
 						kmer_lower = kmer < rev_kmer;

@@ -158,7 +158,7 @@ template<unsigned SIZE> void CBigKmerBinUncompactor<SIZE>::ExpandKxmersBoth()
 			GetNextSymb(symb, byte_shift, pos, data_p);
 			kmer.SHL_insert_2bits(symb);
 			kmer.mask(kmer_mask);
-			rev_kmer.SHR_insert_2bits(3 - symb, rev_shift);
+			rev_kmer.SHR_insert_2bits(0b10 ^ symb, rev_shift);
 			--symbols_left;
 
 			if (kmer_lower)
@@ -185,7 +185,7 @@ template<unsigned SIZE> void CBigKmerBinUncompactor<SIZE>::ExpandKxmersBoth()
 						GetNextSymb(symb, byte_shift, pos, data_p);
 						kmer.SHL_insert_2bits(symb);
 						kmer.mask(kmer_mask);
-						rev_kmer.SHR_insert_2bits(3 - symb, rev_shift);
+						rev_kmer.SHR_insert_2bits(0b10 ^ symb, rev_shift);
 						--symbols_left;
 
 						kmer_lower = kmer < rev_kmer;
@@ -215,7 +215,7 @@ template<unsigned SIZE> void CBigKmerBinUncompactor<SIZE>::ExpandKxmersBoth()
 			{
 				if (!(kmer < rev_kmer))
 				{
-					kxmers[kxmers_pos].set_2bits(3 - symb, kmer_len * 2 + x * 2);
+					kxmers[kxmers_pos].set_2bits(0b10 ^ symb, kmer_len * 2 + x * 2);
 					++x;
 					if (x == max_x)
 					{
@@ -235,7 +235,7 @@ template<unsigned SIZE> void CBigKmerBinUncompactor<SIZE>::ExpandKxmersBoth()
 						GetNextSymb(symb, byte_shift, pos, data_p);
 						kmer.SHL_insert_2bits(symb);
 						kmer.mask(kmer_mask);
-						rev_kmer.SHR_insert_2bits(3 - symb, rev_shift);
+						rev_kmer.SHR_insert_2bits(0b10 ^ symb, rev_shift);
 						--symbols_left;
 
 						kmer_lower = kmer < rev_kmer;
@@ -474,7 +474,7 @@ template<unsigned SIZE> void CBigKmerBinUncompactor<SIZE>::ExpandKmersBoth()
 				byte_shift -= 2;
 			kmer.SHL_insert_2bits(symb);
 			kmer.mask(kmer_mask);
-			rev_kmer.SHR_insert_2bits(3 - symb, kmer_len_shift);
+			rev_kmer.SHR_insert_2bits(0b10 ^ symb, kmer_len_shift);
 			kmer_can = kmer < rev_kmer ? kmer : rev_kmer;
 			kxmers[kxmers_pos++].set(kmer_can);
 			if (kxmers_pos >= kxmers_size)
