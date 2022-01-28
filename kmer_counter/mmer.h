@@ -33,12 +33,20 @@ class CMmer
 
 	static bool is_allowed(uint32 mmer, uint32 len)
 	{
+  /* [haoz:] before change encode strategy
 		if ((mmer & 0x3f) == 0x3f)            // TTT suffix
 			return false;
 		if ((mmer & 0x3f) == 0x3b)            // TGT suffix
 			return false;
-		if ((mmer & 0x3c) == 0x3c)            // TG* suffix !!!! consider issue #152
+		if ((mmer & 0x3c) == 0x3c) //[haoz?] if it should be 0x38?? why 0x3c?    // TG* suffix !!!! consider issue #152
 			return false;
+   */
+    if ((mmer & 0x3f) == 0x2a)            // TTT suffix
+      return false;
+    if ((mmer & 0x3f) == 0x2e)            // TGT suffix
+      return false;
+    if ((mmer & 0x3c) == 0x2c)            // TG* suffix !!!! consider issue #152
+      return false;
 
 		for (uint32 j = 0; j < len - 3; ++j)
 		if ((mmer & 0xf) == 0)                // AA inside
@@ -65,7 +73,8 @@ class CMmer
 			uint32 shift = len*2 - 2;
 			for(uint32 i = 0 ; i < len ; ++i)
 			{
-				rev += (3 - (mmer & 3)) << shift;
+				//rev += (3 - (mmer & 3)) << shift; //[haoz] before change encode strategy
+        rev += (0b10 ^ (mmer & 3)) << shift;
 				mmer >>= 2;
 				shift -= 2;
 			}
