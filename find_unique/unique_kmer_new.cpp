@@ -7,6 +7,8 @@
 std::mutex cout_mut;
 //test rsync
 
+const std::string TARGET="AAAAAATTATATTATTCTATGAGTT";
+
 const char kmerToBase[256][4] = 
 {
      {'A', 'A', 'A', 'A'},
@@ -402,13 +404,42 @@ void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_fil
   buf_pos = 0;
 }
 
+inline uint64_t seq2uint64(const string& seq, const int len) {
+
+	uint8_t mask = 0x06; //FIXME: not general only works for DNA sequences, it's just a trick.
+	uint64_t res = 0;
+	for(int i = 0; i < len; i++)
+	{
+        res <<= 2;
+        if(seq[i]=='N'){
+            return 0;
+        }
+		uint8_t meri = (uint8_t)seq[i];
+		meri &= mask;
+		meri >>= 1;
+		res |= (uint64_t)meri;
+	}
+	
+    return res;
+}
+
 void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kmer_node* buf, 
                  int &buf_pos, int maxbufsize, Write_file &w_file, const vector<string> &ids, 
                  uint64_t exclude_id)
 {
+	const uint64_t target_u = seq2uint64(TARGET, 25);
+	
 	const uint64_t notuniq = -1;
 	for(auto& k : kmerslist){
+		if(k.first == target_u){
+			std::cerr << "1. find " << TARGET << " and id is:" << k.second
+					 << " exclude id: " << exclude_id << std::endl;
+		}
 		if(k.second != notuniq && k.second != exclude_id){
+			if(k.first == target_u){
+				std::cerr << "2. find " << TARGET << " and id is:" << k.second
+									<< " exclude id: " << exclude_id << std::endl;
+			}
 			buf[buf_pos++] = kmer_node{k.first, k.second};
 			if(buf_pos == maxbufsize)
 			{
@@ -447,18 +478,26 @@ void find_unique_byset(unordered_map<uint64_t, uint64_t> &kmerslist,
 
 inline void print(uint64_t kmer, int kl)
 {
-    char kmerstr[kl];
-    static char maparray[4] = {'A', 'C', 'G', 'T'};
+    char kmerstr[kl+1];
+    static char maparray[4] = {'A', 'C', 'T', 'G'};
     for(int i = 0; i < kl; i++)
     {
         uint8_t base = kmer & 0x3;
         kmerstr[kl - 1 - i] = maparray[base];
         kmer >>= 2;
     }
-    cout << string(kmerstr) << endl; 
+		kmerstr[kl] = '\0';
+    cerr << string(kmerstr) << endl; 
 }
 
 inline void kmer_add(unordered_map<uint64_t, uint64_t> &kmerslist, const uint64_t kmer, const uint64_t fid){
+	//const std::string TARGET="ATTATATTTTCGTATATCATTATAA";
+	const uint64_t target_u = seq2uint64(TARGET, 25);
+	if(kmer == target_u){
+		std::cerr << "** find " << TARGET << " and id is:" << fid
+							<< std::endl;
+		//print(target_u, 25);
+	}
 	auto re = kmerslist.find(kmer);
 	if (re == kmerslist.end()){
 		kmerslist.insert({kmer, fid});
@@ -592,6 +631,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     int buf_pos_ = 0;
     //find_unique(kmerslist, kmer_len, 0, 8, (kmer_len * 2 + 7) / 8 * 8, nodebuf, buf_pos_, 1024 * 4, w_file, ids);
     if(threshold <= 1){
+			//std::cerr << "finding uniq start: " << std::endl;
       find_unique(kmerslist, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids, exclude_id);
     }else{
       find_unique_byset(kmerslist, kmer2set, kmer_len, nodebuf, buf_pos_, MAXBUFSIZE, w_file, ids, exclude_id);
