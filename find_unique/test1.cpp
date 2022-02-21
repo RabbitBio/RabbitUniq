@@ -1,3 +1,4 @@
+//verify the get_unique_kmer function
 #include <iostream>
 #include <fstream>
 #include <vector>

@@ -45,13 +45,17 @@ def main_step(args):
   file_path = os.path.dirname(os.path.realpath(__file__))
   bin_dir = os.path.join(file_path, 'bin')
   #---------step1-----------#
-  s1_start = time.time()
+  # use part of kmc to generate intermediate results
+  # but we modified the process of generating intermediate results, the super-kmer in the generated 
+  # intermediate results carries information about which species it belong to.
+  # species it belong to.1_start = time.time()
   try:
     print("step1: ", " ".join([os.path.join(bin_dir, 'kmc'),
               '-k'+str(KMERLEN),
               '-n'+str(bin_num),
               '-fm', '@'+infile_list,
               "tmp", work_space]))
+    # execute the modified kmc
     kmc_out = subprocess.check_output([os.path.join(bin_dir, 'kmc'),
                                        '-k'+str(KMERLEN),
                                        '-n'+str(bin_num),
@@ -64,6 +68,7 @@ def main_step(args):
   except e:
     print("run kmc error!")
   
+  # collect the names of the intermediate result files for use in the following steps.
   with open(os.path.join(work_space, 'binList.list'), 'w') as f:
     for filename in glob.glob(os.path.join(work_space, "*.bin")):
       f.write(filename + '\n')
@@ -71,6 +76,7 @@ def main_step(args):
   print("step 1 time: ", s1_end - s1_start)
   
   #---------step2-----------#
+  # generate unique kmer
   try:
     print("step2: ", " ".join([os.path.join(bin_dir, 'generate_uniq'),
      os.path.join(work_space, "binList.list"),
