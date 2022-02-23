@@ -389,9 +389,11 @@ void Write_file::operator()()
 }
 
 
+// hand over the data to the writer thread
 void Flush(kmer_node *buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file, const vector<string> &ids)
 {
   //uint64_t *tmpbuf = new uint64_t[2 * maxbufsize];
+  //
   uint64_t *tmpbuf = new uint64_t[2 * buf_pos];
   int tmpbufsize = 0;
   for (int x = 0; x < buf_pos; x++)
@@ -452,6 +454,7 @@ void find_unique(unordered_map<uint64_t, uint64_t> &kmerslist, int kmer_len, kme
   }
 }
 
+// find unique kmer and output it
 void find_unique_byset(unordered_map<uint64_t, uint64_t> &kmerslist, 
                       unordered_map<uint64_t, std::unordered_set<uint64_t> > &kmer2set,
                       int kmer_len, kmer_node* buf, 
@@ -530,6 +533,8 @@ inline void kmer_add_set(unordered_map<uint64_t, uint64_t> &kmerslist, unordered
   }
 }
 
+// use mmap function to speed up file reading.
+// however, when dealing with small files, the effect may be poor.
 void get_unique_kmer(const string &file_name, int kmer_len, const vector<string> &ids, Write_file &w_file, uint64_t exclude_id, const int threshold)
 {
     int fd = open(file_name.c_str(), O_RDONLY, 0);
@@ -544,10 +549,17 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
 
     //list<kmer_node> kmerslist;
     //vector<kmer_node> kmerslist;
+    //use robin_hood hash map to speed up the search process.
     unordered_map<uint64_t, uint64_t> kmerslist;
     unordered_map<uint64_t, std::unordered_set<uint64_t> > kmer2set;
 
     std::cout << "processing data: " << std::endl;
+    //parsing intermediate result
+    //an entry for an intermediate result has the following format;
+    //  file id : uint64
+    //  super kmer len : uint8
+    //  super kmer content
+    //an intermediate result consists of several items.
     for(uint64_t i = 0; i < file_size; )
     {
         uint64_t file_id = *((uint64_t*)(buf + i));
@@ -640,6 +652,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     if(buf_pos_ != 0)
     {
         //void Flush(kmer_node* buf, int maxbufsize, int kmer_len, int &buf_pos, Write_file &w_file)
+        //output 
         Flush(nodebuf, buf_pos_, kmer_len, buf_pos_, w_file, ids);
     }
 
@@ -648,6 +661,7 @@ void get_unique_kmer(const string &file_name, int kmer_len, const vector<string>
     unordered_map<uint64_t, uint64_t>().swap(kmerslist);
     unordered_map<uint64_t, std::unordered_set<uint64_t> >().swap(kmer2set);
 
+    //the file has been processed.
     w_file.set_finished();
     delete nodebuf;
    

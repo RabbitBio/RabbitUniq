@@ -1,3 +1,7 @@
+//verify that the result is correct
+//argv[1] : true answer path
+//argv[2] : check answer path
+//check if two files contain exactly the same entries.
 #include <iostream>
 #include <vector>
 #include <fstream>

@@ -61,6 +61,7 @@ struct kc_t{
     }
 };
 
+//
 class Write_file
 {
     private:

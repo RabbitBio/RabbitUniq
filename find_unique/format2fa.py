@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# format output file to fasta format
 
 def split(filename):
   filename = ""

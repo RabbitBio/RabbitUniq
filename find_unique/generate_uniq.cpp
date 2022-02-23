@@ -27,6 +27,7 @@ void thread_fun(vector<string> *file_names, vector<string> *v_kinds,
         //cout << i << endl;
         cout << "starting" << i << " - " << s << endl;
         //string s = (*file_names)[i];
+        // main processing function
         get_unique_kmer(s, kmer_len, *v_kinds, *w_file, exclude_id, threshold);
         cout << i << " - " << s << " done" << endl;
     } 
@@ -107,6 +108,9 @@ int main(int argc, char **argv)
 
     vector<thread> threads;
 
+
+    // each thread processes one file, and then fetches other files for processing after processing,
+    // using atomic variavle to ensure the correctness of the program.
     for(int i = 0; i < work_th; i++)
 			threads.emplace_back(thread_fun, &file_vectors, &v, &w_file, kmer_len, exclude_id, threshold);
 
