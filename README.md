@@ -27,6 +27,8 @@ optional arguments:
   --bin_num BIN_NUM, -b BIN_NUM
                         Number of bin files to be store, from 64 to 2000[default: 512]
   --exclude_last, -e    Exclude the last element in infile_list when output
+  --uniq_ref_num UNIQ_REF_NUM, -u UNIQ_REF_NUM
+                        Threshold considered as unique kmer, default is 1
   --output_char, -c     Output the unique k-mer collection in character-based file instead of binary file (slower, so not recommended)
 ```
 
