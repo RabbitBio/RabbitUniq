@@ -90,6 +90,7 @@ if __name__ == "__main__":
   print('file\t manual_result \t rabbituniq_result \t difference')
   for k in manual_result.keys():
     print(k, len(manual_result[k]), len(rabuniq_result[k]), len(manual_result[k]) - len(rabuniq_result[k]))
+    print('set difference: ', len(rabuniq_result[k] - manual_result[k]))
     # if 'ATTATATTTTCGTATATCATTATAA' in manual_result:
     #   print('okkkkkkkkkkkkkkkkkkkkk')
     # if 'ATTATATTTTCGTATATCATTATAA' in rabuniq_result:
