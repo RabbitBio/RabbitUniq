@@ -38,7 +38,7 @@ optional arguments:
 cat $REF_FILE_PATH >> ${infile_list}
 time${RabbitUniq_PATH }/RabbitUniq.py \
   --infile_list  ${infile_list} \
-  --outfile  ${outname}.fa \
+  --outfile  ${outname}.bin \
   -n 20 -k 25 -b 2000 \
 ```
 
@@ -49,7 +49,7 @@ and run RabbitUniq with parameter `--exclude_last`.
 cat $REF_FILE_PATH >> ${infile_list}
 time${RabbitUniq_PATH }/RabbitUniq.py \
   --infile_list  ${infile_list} -19. list \
-  --outfile  ${outname}.fa \
+  --outfile  ${outname}.bin \
   -n 20 -k 25 -b 512 \
   --exclude_last\
 ```
