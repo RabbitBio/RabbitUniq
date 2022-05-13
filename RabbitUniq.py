@@ -48,7 +48,7 @@ def main_step(args):
   # use part of kmc to generate intermediate results
   # but we modified the process of generating intermediate results, the super-kmer in the generated 
   # intermediate results carries information about which species it belong to.
-  # species it belong to.1_start = time.time()
+  s1_start = time.time()
   try:
     print("step1: ", " ".join([os.path.join(bin_dir, 'kmc'),
               '-k'+str(KMERLEN),
